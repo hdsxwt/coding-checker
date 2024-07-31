@@ -200,9 +200,14 @@ int main(int argc, char* argv[]) {
 			system(opt1.data());
 			
 			string opt2 = "clang++ "; opt2 += s[op-1]; opt2 += ".cpp -o "; opt2 += s[op-1]; opt2 += ".exe -std=c++14 -O2";
-			system(opt2.data());
-			vis[op-1] = true;
-			color_printf("done!\n", 2, 15);
+			int res = system(opt2.data());
+			if (res == 0) {
+				vis[op-1] = true;
+				color_printf("done!\n", 2, 15);
+			} else {
+				color_printf("error!\n", 4, 15);
+				system("pause");
+			}
 			Sleep(700);
 		} else if (op == 4) {
 			testing();
