@@ -37,7 +37,7 @@ int toInt(const char *s) {
 
 void color_printf(const char* s, int front_color,int back_color) {
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleTextAttribute(handle, BACKGROUND_INTENSITY | back_color*16 |FOREGROUND_INTENSITY | front_color);
+	SetConsoleTextAttribute(handle, BACKGROUND_INTENSITY | back_color*16 | FOREGROUND_INTENSITY | front_color);
 	printf(s);
 	SetConsoleTextAttribute(handle, FOREGROUND_INTENSITY | 7);
 }
