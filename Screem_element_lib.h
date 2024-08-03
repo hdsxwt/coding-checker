@@ -97,7 +97,7 @@ public:
 	}
 };
 
-class Button {
+class Menu{
 private:
 	Color last_color;
 	Color recent_color;
@@ -105,45 +105,7 @@ private:
 public:
 	int id;
 	Menu* fa;
-	COORD position;
-	COORD global_position;
-	string text;
-	bool visible;
-	bool clickable;
-	Color color;
-	Color highlight_color;
-	void set_visible(bool visible) {
-		this -> visible = visible;
-	}
-	void set_clickable(bool clickable) {
-		this -> clickable = clickable;
-	}
-	Button () {
-		this -> id = 0;
-		this -> last_color = default_highlight_color;
-		this -> recent_color = default_color;
-		this -> fa = nullptr;
-		this -> position = global_position = COORD{0, 0};
-		this -> text = "";
-		this -> visible = false;
-		this -> clickable = false;
-		this -> color = default_color;
-		this -> highlight_color = default_highlight_color;
-	}
-	
-	void print();
-	Call_back update();
-};
-
-class Menu{
-private:
-	Color recent_color;
-	Color last_color;
-public:
-	int id;
-	Menu* fa;
-	vector<Menu*> son_menu;
-	vector<Button*> son_button;
+	vector<Menu*> son;
 	COORD position;
 	COORD global_position;
 	string text;
@@ -164,8 +126,7 @@ public:
 	}
 	Menu () {
 		this -> fa = nullptr;
-		this -> son_menu.clear();
-		this -> son_button.clear();
+		this -> son.clear();
 		this -> position = global_position = COORD{0, 0};
 		this -> text = "";
 		this -> folded = false;
@@ -178,22 +139,12 @@ public:
 	}
 	void add_son(Menu menu) {
 		menu.fa = this;
-		son_menu.push_back(&menu);
-	}
-	void add_son(Button button) {
-		button.fa = this;
-		son_button.push_back(&button);
+		son.push_back(&menu);
 	}
 	
 	void print();
 	Call_back update();
 };
-
-void Button::print() {
-	set_mouse_position(global_position);
-	set_color(recent_color);
-	printf("%s", text.data());
-}
 
 void Menu::print() {
 	if (!visible) return;
@@ -201,29 +152,6 @@ void Menu::print() {
 	set_color(recent_color);
 	printf("%s", text.data());
 	set_color(default_color);
-}
-
-Call_back Button::update() {
-	
-	
-	if (fa != nullptr) global_position = position + fa -> position;
-	else global_position = position;
-	
-	Call_back ret;
-	if (recent_mouse_position.Y == global_position.Y &&
-			recent_mouse_position.X >= global_position.X &&
-			recent_mouse_position.X <= global_position.X + (short)text.size() - 1) {
-		recent_color = highlight_color;
-	} else {
-		recent_color = color;
-	}
-	
-	if (recent_color != last_color) {
-		print();
-		last_color = recent_color;
-		ret.push_back(id);
-	}
-	return ret;
 }
 
 Call_back Menu::update() {
@@ -249,17 +177,12 @@ Call_back Menu::update() {
 	if (recent_color != last_color) {
 		print();
 		last_color = recent_color;
-		ret.push_back(id);
 	}
 	
-	
-	
-	for (auto button: son_button) {
-		ret += button -> update();
-	}
-	for (auto menu: son_menu) {
+	for (auto menu: son) {
 		ret += menu-> update();
 	}
+	
 	return ret;
 }
 
@@ -323,7 +246,8 @@ void stop() { // just a note
 
 /*
 TODO
+the function of Call_back shold be updated()
+click
 fold
 positin update
-click
 */
