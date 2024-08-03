@@ -57,6 +57,7 @@ public:
 };
 const Color default_color = Color(BRIGHTWHITE, BLACK);
 const Color default_highlight_color = Color(BRIGHTCYAN, BLACK);
+const Color default_click_color = Color(GREEN, BLACK);
 
 void set_color(Color color);
 void set_mouse_position(const COORD cursorPosition);
@@ -115,6 +116,7 @@ public:
 	bool foldable;
 	Color color;
 	Color highlight_color;
+	Color click_color;
 	void set_visible (bool visible) {
 		this -> visible = visible;
 	}
@@ -135,6 +137,7 @@ public:
 		this -> foldable = false;
 		this -> color = default_color;
 		this -> highlight_color = default_highlight_color;
+		this -> click_color = default_click_color;
 		this -> last_color = default_highlight_color;
 	}
 	void add_son(Menu menu) {
@@ -142,16 +145,23 @@ public:
 		son.push_back(&menu);
 	}
 	
-	void print();
+	void print(bool typ);
 	Call_back update();
 };
 
-void Menu::print() {
-	if (!visible) return;
-	set_mouse_position(global_position);
-	set_color(recent_color);
-	printf("%s", text.data());
-	set_color(default_color);
+void Menu::print(bool typ = true) {
+	if (typ) {
+		if (!visible) return;
+		set_mouse_position(global_position);
+		set_color(recent_color);
+		printf("%s", text.data());
+		set_color(default_color);
+	} else {
+		set_mouse_position(global_position);
+		string s(text.size(), ' ');
+		printf("%s", s.data());
+		set_color(default_color);
+	}
 }
 
 Call_back Menu::update() {
@@ -167,12 +177,15 @@ Call_back Menu::update() {
 	
 	if (recent_mouse_position.Y == global_position.Y &&
 		recent_mouse_position.X >= global_position.X &&
-		recent_mouse_position.X <= global_position.X + (short)text.size() - 1) {
+		recent_mouse_position.X <= global_position.X + (short)text.size() - 1 && visible && clickable) {
 		recent_color = highlight_color;
+		if (recent_mouse_event.dwButtonState && recent_mouse_event.dwButtonState != MOUSE_WHEELED) {
+			recent_color = click_color;
+			ret.push_back(id);
+		}
 	} else {
 		recent_color = color;
 	}
-	
 	
 	if (recent_color != last_color) {
 		print();
@@ -180,7 +193,7 @@ Call_back Menu::update() {
 	}
 	
 	for (auto menu: son) {
-		ret += menu-> update();
+		ret += menu -> update();
 	}
 	
 	return ret;
