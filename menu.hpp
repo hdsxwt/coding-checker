@@ -1,4 +1,5 @@
 #ifndef MENU_HPP
+
 #define MENU_HPP
 #include <windows.h>
 #include <algorithm>
@@ -101,9 +102,9 @@ bool getMouseEvent(MOUSE_EVENT_RECORD &mouse_record) {
 	ReadConsoleInput(GetStdHandle(STD_INPUT_HANDLE), &record, 1, &temp);
 	if (record.EventType == MOUSE_EVENT) {
 		mouse_record = record.Event.MouseEvent;
-		return false;
+		return true;
 	}
-	return true;
+	return false;
 }
 struct {
 	const WORD Black = 0;
@@ -369,7 +370,7 @@ void printMenu(Menu &menu, COORD hangPosition = {-1, -1}, bool refresh = false) 
 			print(std::string(menu.buttonHistory[i].text.length(), ' '), menu.buttonHistory[i].position + menu.buttonHistory[i].offset + menu.position);
 		}
 	}
-	for (size_t i = 0; i < menu.buttonData.size(); ++i) {
+	for (size_t i = 0; i < menu.buttonData.size(); ++i) { // fuck you --------------------------------
 		if (refresh || (checkHistory(menu, i, hangPosition) && menu.buttonData[i].visible)) {
 			if ((!refresh) && menu.buttonData[i] == hangPosition - menu.buttonOffset[i]) {
 				menu.buttonData[i].color.toHighlightColor();
@@ -426,8 +427,8 @@ bool runMenu(Menu &menu, std::string &event) {
 	bool res = true;
 	if (menu.timeLimit == -1 || getTimeDifference(menu.time_start, time_now) < menu.timeLimit) {
 		res = false;
-		if (!getMouseEvent(mouseEvent)) {
-			switch (mouseEvent.dwEventFlags) {
+		if (getMouseEvent(mouseEvent)) {
+			switch (mouseEvent.dwEventFlags) { // the -------------------------- plus pro 
 				case mouseMove: {
 					printMenu(menu, mouseEvent.dwMousePosition - menu.position);
 					break;

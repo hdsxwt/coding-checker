@@ -1,26 +1,18 @@
-#include "menu.hpp"
+#include "Screem_element_lib.h"
+#include <iostream>
 
 using namespace std;
 
 int main() {
-	Menu menu;
 	Button button;
-	button.text = "exit";
-	button.event = "fuck";
-	button.position = {20, 10};
-	button.visible = 1;
-	button.clickable = 1;
-	
-	menu.push(button);
-	menu.start();
+	button.text = "hello my friends.";
+	button.position = COORD {20, 10};
+	root.add_son(button);
+	start();
 	while (1) {
-		
-		string s;
-		runMenu(menu, s);
-		if (s == "fuck") {
-			int x = menu.unfold(100, 100);
-		}
+		Call_back call_back = root.update();
+//		cout << call_back.size() << endl;
 	}
-	menu.stop();
-	return 0;
+	stop();
+	system("pause");
 }
