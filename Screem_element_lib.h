@@ -12,13 +12,11 @@ using std::cout;
 using std::endl;
 
 
-COORD operator + (const COORD a, const COORD b) {
-	return COORD{(short)(a.X + b.X), (short)(a.Y + b.Y)};
-}
-
-COORD operator - (const COORD a, const COORD b) {
-	return COORD{(short)(a.X - b.X), (short)(a.Y - b.Y)};
-}
+COORD operator + (const COORD a, const COORD b) { return COORD{(short)(a.X + b.X), (short)(a.Y + b.Y)}; }
+COORD operator - (const COORD a, const COORD b) { return COORD{(short)(a.X - b.X), (short)(a.Y - b.Y)}; }
+COORD operator * (const COORD a, const short k) { return COORD{(short)(a.X * k),   (short)(a.Y * k)}; }
+bool operator == (const COORD a, const COORD b) { return a.X == b.X && a.Y == b.Y; }
+bool operator != (const COORD a, const COORD b) { return !(a == b); }
 
 class Color;
 class Button;
@@ -69,7 +67,6 @@ bool get_mouse_event() {
 	INPUT_RECORD record;
 	DWORD temp;
 	
-	
 	ReadConsoleInput(GetStdHandle(STD_INPUT_HANDLE), &record, 1, &temp);
 	if (record.EventType == MOUSE_EVENT) {
 		recent_mouse_event = record.Event.MouseEvent;
@@ -98,25 +95,41 @@ public:
 	}
 };
 
+
 class Menu{
 private:
 	Color last_color;
 	Color recent_color;
 	bool last_visible;
+	bool auto_position;
+	bool real_visible;
+	short height;
+	bool folded;
+	COORD global_position;
+	COORD last_global_position;
+	short deep;
 public:
 	int id;
 	Menu* fa;
+	Menu* lst;
 	vector<Menu*> son;
 	COORD position;
-	COORD global_position;
 	string text;
-	bool folded;
 	bool visible;
 	bool clickable;
 	bool foldable;
 	Color color;
 	Color highlight_color;
 	Color click_color;
+	
+	void fold();
+	
+	void unfold();
+	
+	void set_auto_position(bool x) {
+		auto_position = x;
+	}
+	
 	void set_visible (bool visible) {
 		this -> visible = visible;
 	}
@@ -128,46 +141,116 @@ public:
 	}
 	Menu () {
 		this -> fa = nullptr;
+		this -> lst = nullptr;
 		this -> son.clear();
 		this -> position = global_position = COORD{0, 0};
+		this -> height = 2;
 		this -> text = "";
 		this -> folded = false;
 		this -> visible = false;
+		this -> real_visible = false;
 		this -> clickable = false;
 		this -> foldable = false;
 		this -> color = default_color;
 		this -> highlight_color = default_highlight_color;
 		this -> click_color = default_click_color;
 		this -> last_color = default_highlight_color;
+		this -> recent_color = default_color;
+		this -> last_visible = false;
+		this -> auto_position = true;
 	}
-	void add_son(Menu menu) {
-		menu.fa = this;
-		son.push_back(&menu);
+	void set_position (short x, short y) {
+		position = COORD{x, y};
+		auto_position = false;
+	}
+	void add_son(Menu* menu) {
+		this -> height += 2;
+		if (!son.empty()) menu -> lst = son.back();
+		menu -> fa = this;
+		son.push_back(menu);
 	}
 	
-	void print(bool typ);
-	Call_back update();
+	void print(bool typ = true);
+	Call_back update(bool is_root = true);
 };
 
-void Menu::print(bool typ = true) {
-	if (typ) {
-		if (!visible) return;
-		set_mouse_position(global_position);
-		set_color(recent_color);
-		printf("%s", text.data());
-		set_color(default_color);
-	} else {
-		set_mouse_position(global_position);
+Menu root;
+
+void Menu::fold() {
+	folded = true;
+	root.update(true);
+}
+
+void Menu::unfold(){
+	folded = false;
+	root.update(true);
+}
+
+struct output_content{
+	Color color;
+	COORD position;
+	string text;
+	output_content(Color color, COORD position, string text) {
+		this -> color = color;
+		this -> position = position;
+		this -> text = text;
+	}
+};
+
+vector<output_content> output_cache;
+vector<output_content> clear_cache;
+
+void fresh_print() {
+	set_color(default_color);
+	for (auto output: clear_cache) {
+		set_mouse_position(output.position);
+		printf("%s", output.text.data());
+	}
+	for (auto output: output_cache) {
+		set_mouse_position(output.position);
+		set_color(output.color);
+		printf("%s", output.text.data());
+	}
+	set_color(default_color);
+	clear_cache.clear();
+	output_cache.clear();
+}
+
+void Menu::print(bool typ) {
+	if (global_position != last_global_position) { // clear old
 		string s(text.size(), ' ');
-		printf("%s", s.data());
-		set_color(default_color);
+		clear_cache.push_back(output_content(default_color, last_global_position + COORD{deep, 0}*2,s));
+		last_global_position = global_position;
+	}
+	
+	if (typ) { // output new
+		if (!real_visible) return;
+		output_cache.push_back(output_content(recent_color, global_position + COORD{deep, 0}*2, text));
+	} else {
+		string s(text.size(), ' ');
+		clear_cache.push_back(output_content(default_color, last_global_position + COORD{deep, 0}*2,s));
 	}
 }
 
-Call_back Menu::update() {
+Call_back Menu::update(bool is_root) {
+	if (auto_position) {
+		if (lst != nullptr) {
+			position.Y = (lst -> height + lst -> position.Y);
+		} else if (fa != nullptr) {
+			position.Y = 2;
+		} else {
+			auto_position = false;
+		}
+	}
 	
-	if (fa != nullptr) global_position = position + fa -> position;
-	else global_position = position;
+	if (fa != nullptr) {
+		global_position = position + fa -> global_position;
+		real_visible = (visible) && (fa -> real_visible) && !(fa -> folded);
+		this -> deep = fa -> deep + 1;
+	} else {
+		global_position = position;
+		real_visible = visible;
+	}
 	
 	if (id == 0) { // the root
 		if (!get_mouse_event()) return Call_back();
@@ -176,8 +259,8 @@ Call_back Menu::update() {
 	Call_back ret;
 	
 	if (recent_mouse_position.Y == global_position.Y &&
-		recent_mouse_position.X >= global_position.X &&
-		recent_mouse_position.X <= global_position.X + (short)text.size() - 1 && visible && clickable) {
+		recent_mouse_position.X >= (global_position.X + deep * 2) &&
+		recent_mouse_position.X <= (global_position.X + deep * 2) + (short)text.size() - 1 && real_visible && clickable) {
 		recent_color = highlight_color;
 		if (recent_mouse_event.dwButtonState && recent_mouse_event.dwButtonState != MOUSE_WHEELED) {
 			recent_color = click_color;
@@ -187,21 +270,23 @@ Call_back Menu::update() {
 		recent_color = color;
 	}
 	
-	if (recent_color != last_color) {
-		print();
+	if (recent_color != last_color || last_visible != real_visible || global_position != last_global_position) {
+		print(real_visible);
 		last_color = recent_color;
+		last_visible = real_visible;
+	}
+	height = 2;
+	for (auto menu: son) {
+		ret += (menu -> update(false));
+		if (!folded) height += menu -> height;
 	}
 	
-	for (auto menu: son) {
-		ret += menu -> update();
+	if (is_root) {
+		fresh_print();
 	}
 	
 	return ret;
 }
-
-
-
-Menu root;
 
 
 void set_color(Color color) {
@@ -241,15 +326,17 @@ void Set_console_mode(bool QuickEditMode, bool InsertMode, bool MouseInput) {
 	SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode);
 }
 
-void start() { // just a note
+void start() {
 	Set_cursor_visible(false);
 	Set_console_mode(false, false, true);
 	FlushConsoleInputBuffer(GetStdHandle(STD_OUTPUT_HANDLE));
 	FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 	set_color(default_color);
+	root.visible = true;
+	root.update(1);
 }
 
-void stop() { // just a note
+void stop() {
 	Set_cursor_visible(true);
 	Set_console_mode(true, true, true);
 }
@@ -259,8 +346,7 @@ void stop() { // just a note
 
 /*
 TODO
-the function of Call_back shold be updated()
-click
 fold
+add foldable permiission
 positin update
 */
