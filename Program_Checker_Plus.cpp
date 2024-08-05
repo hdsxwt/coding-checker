@@ -1,4 +1,5 @@
 #define DBG_MESSAGE
+#include <cassert>
 #include "Screem_element_lib.h"
 #include <iostream>
 
@@ -18,6 +19,7 @@ int main() {
 	button2.visible = true;
 	button2.clickable = true;
 	button2.id = 2;
+	button2.foldable = true;
 	button1.add_son(&button2);
 	
 	Menu button3;
@@ -25,7 +27,6 @@ int main() {
 	button3.visible = true;
 	button3.clickable = true;
 	button3.id = 3;
-//	button3.foldable = true;
 	button2.add_son(&button3);
 	
 	Menu button4;
@@ -38,11 +39,13 @@ int main() {
 	start();
 	while (1) {
 		Call_back call_back = root.update();
-		if (call_back.size() != 0) {
+		if (!call_back.empty()) {
 			if (call_back.ids[0] == 2) {
 				button2.fold();
 			} if (call_back.ids[0] == 1) {
 				button2.unfold();
+			} if (call_back.ids[0] == 4) {
+				button4.text = "nb";
 			}
 		}
 	}

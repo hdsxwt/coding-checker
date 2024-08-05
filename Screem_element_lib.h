@@ -60,22 +60,12 @@ const Color default_click_color = Color(GREEN, BLACK);
 
 void set_color(Color color);
 void set_mouse_position(const COORD cursorPosition);
+void set_mouse_position (const short x, const short y);
+bool get_mouse_event();
 
 MOUSE_EVENT_RECORD recent_mouse_event;
 COORD recent_mouse_position;
 
-bool get_mouse_event() {
-	INPUT_RECORD record;
-	DWORD temp;
-	
-	ReadConsoleInput(GetStdHandle(STD_INPUT_HANDLE), &record, 1, &temp);
-	if (record.EventType == MOUSE_EVENT) {
-		recent_mouse_event = record.Event.MouseEvent;
-		recent_mouse_position = recent_mouse_event.dwMousePosition;
-		return true;
-	}
-	return false;
-}
 
 class Call_back {
 public:
@@ -94,10 +84,13 @@ public:
 	int size() {
 		return ids.size();
 	}
+	bool empty() {
+		return ids.empty();
+	}
 };
 
 
-class Menu{
+class Menu { // Menu -----------------------------------------------------------------
 private:
 	Fold_button* fold_button;
 protected:
@@ -170,21 +163,19 @@ public:
 		position = COORD{x, y};
 		auto_position = false;
 	}
-	void add_son(Menu* menu) {
-		this -> height += 2;
-		if (!son.empty()) menu -> lst = son.back();
-		menu -> fa = this;
-		son.push_back(menu);
-	}
+	void add_son(Menu* menu, bool typ = true);
 private:
 	void add_fold_button(Fold_button* fold_button);
-public:
+protected:
 	virtual void print(bool typ = true);
-	virtual Call_back update(bool is_root = true);
 	virtual Menu* get_class_name() { return this; }
+public:
+	virtual Call_back update(bool is_root = true);
 };
 
-class Fold_button : public Menu {
+int psz = 9999;
+
+class Fold_button : public Menu { // Fold_BUtton -----------------------------------------
 private:
 	bool last_open;
 public:
@@ -192,13 +183,16 @@ public:
 	string close_text;
 	string open_text;
 	Fold_button (): Menu() {
-		this -> close_text = "→";
-		this -> open_text = "↓";
+		this -> close_text = "+";
+		this -> open_text = "-";
+		this -> text = close_text;
 		this -> last_open = false;
 		this -> open = true;
+		this -> height = 0;
+		this -> id = ++psz;
 	}
 	
-	virtual Call_back update(bool is_root = true);
+	virtual Call_back update(bool is_root);
 	virtual Fold_button* get_class_name() { return this; }
 };
 
@@ -206,17 +200,24 @@ Menu root;
 
 void Menu::fold() {
 	folded = true;
-	root.update(true);
 }
 
-void Menu::unfold(){
+void Menu::unfold() {
 	folded = false;
-	root.update(true);
+}
+
+void Menu::add_son(Menu* menu, bool typ) {
+	if (typ) this -> height += 2;
+	if (!son.empty()) menu -> lst = son.back();
+	menu -> fa = this;
+	son.push_back(menu);
 }
 
 void Menu::add_fold_button(Fold_button* fold_button) {
 	this -> fold_button = fold_button;
-	fold_button -> fa = this;
+	this -> fold_button -> fa = this;
+	this -> fold_button -> clickable = true;
+	this -> fold_button -> visible = true;
 	son.push_back(fold_button);
 	this -> fold_button -> set_auto_position(false);
 	this -> fold_button -> set_position(((text.size() - 1)/ 20 + 1) * 20 ,0);
@@ -235,6 +236,8 @@ struct output_content{
 
 vector<output_content> output_cache;
 vector<output_content> clear_cache;
+
+int cnt = 0;
 
 void fresh_print() {
 	set_color(default_color);
@@ -270,7 +273,7 @@ void Menu::print(bool typ) {
 	}
 }
 
-Call_back Menu::update(bool is_root) {
+Call_back Menu::update(bool is_root) { // update ----------------------------------------------------
 	if (auto_position) {
 		if (lst != nullptr) {
 			position.Y = (lst -> height + lst -> position.Y);
@@ -283,7 +286,8 @@ Call_back Menu::update(bool is_root) {
 	
 	if (fa != nullptr) {
 		global_position = position + fa -> global_position;
-		real_visible = (visible) && (fa -> real_visible) && !(fa -> folded);
+		real_visible = (visible) && (fa -> real_visible) &&
+				(!(fa -> folded) || typeid(*(this -> get_class_name())) == typeid(Fold_button));
 		this -> deep = fa -> deep + 1;
 	} else {
 		global_position = position;
@@ -295,8 +299,8 @@ Call_back Menu::update(bool is_root) {
 	}
 	
 	if (typeid(*(this -> get_class_name())) == typeid(Menu) && foldable && fold_button == nullptr) {
-		Fold_button button;
-		add_fold_button(&button);
+		Fold_button *button = new Fold_button();
+		add_fold_button(button);
 	}
 	
 	Call_back ret;
@@ -307,8 +311,8 @@ Call_back Menu::update(bool is_root) {
 		recent_color = highlight_color;
 		if (recent_mouse_event.dwButtonState && recent_mouse_event.dwButtonState != MOUSE_WHEELED && !pressed) {
 			recent_color = click_color;
-			ret.push_back(id);
 			pressed = true;
+			ret.push_back(id);
 		} else if (!recent_mouse_event.dwButtonState) {
 			pressed = false;
 		}
@@ -317,13 +321,21 @@ Call_back Menu::update(bool is_root) {
 	}
 	
 	
-	if (recent_color != last_color || last_visible != real_visible || global_position != last_global_position) {
+	if (recent_color != last_color || last_visible != real_visible ||
+				global_position != last_global_position || last_text != text) {
 		print(real_visible);
 		last_color = recent_color;
 		last_visible = real_visible;
+		last_text = text;
 	}
-	height = 2;
-	for (auto menu: son) {
+	
+	if (typeid(*(this -> get_class_name())) == typeid(Menu)) {
+		height = 2; // 2 TODO add many line generating
+	} else {
+		height = 0;
+	}
+	
+	for (Menu* menu: son) {
 		ret += (menu -> update(false));
 		if (!folded) height += menu -> height;
 	}
@@ -335,11 +347,25 @@ Call_back Menu::update(bool is_root) {
 	return ret;
 }
 
-Call_back Fold_button::update(bool is_root) {
+Call_back Fold_button::update(bool is_root) { // update ----------------------------------------------------
+	Call_back ret = this -> Menu::update(false);
+	
+	if (!ret.empty()) {
+		open = !open;
+	}
+	
+	if (open != last_open) {
+		last_open = open;
+		if (open == true) {
+			text = open_text;
+			fa -> unfold();
+		} else {
+			text = close_text;
+			fa -> fold();
+		}
+	}
+	
 	return Call_back();
-	Call_back ret = this -> Menu::update();
-	return ret;
-	// TODO
 }
 
 
@@ -347,12 +373,28 @@ Call_back Fold_button::update(bool is_root) {
 // Console command
 
 
+bool get_mouse_event() {
+	INPUT_RECORD record;
+	DWORD temp;
+	
+	ReadConsoleInput(GetStdHandle(STD_INPUT_HANDLE), &record, 1, &temp);
+	if (record.EventType == MOUSE_EVENT) {
+		recent_mouse_event = record.Event.MouseEvent;
+		recent_mouse_position = recent_mouse_event.dwMousePosition;
+		return true;
+	}
+	return false;
+}
+
 void set_color(Color color) {
 	const HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(handle, color.mix());
 }
 
-void set_mouse_position(const COORD cursorPosition) {
+void set_mouse_position (const short x, const short y) {
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{x, y});
+}
+void set_mouse_position (const COORD cursorPosition) {
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cursorPosition);
 }
 
@@ -401,12 +443,3 @@ void stop() {
 
 #endif
 
-
-/*
-TODO
-add fold arrow
-add foldable permiission
-positin update
-*/
-
-//↓ →
