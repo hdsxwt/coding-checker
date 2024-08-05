@@ -25,6 +25,7 @@ int main() {
 	button3.visible = true;
 	button3.clickable = true;
 	button3.id = 3;
+//	button3.foldable = true;
 	button2.add_son(&button3);
 	
 	Menu button4;

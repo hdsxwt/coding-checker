@@ -22,6 +22,7 @@ class Color;
 class Button;
 class Menu;
 class Call_back;
+class Fold_button;
 
 class Color {
 	#define BLACK 0 // hei
@@ -98,6 +99,9 @@ public:
 
 class Menu{
 private:
+	Fold_button* fold_button;
+protected:
+	bool pressed;
 	Color last_color;
 	Color recent_color;
 	bool last_visible;
@@ -108,6 +112,7 @@ private:
 	COORD global_position;
 	COORD last_global_position;
 	short deep;
+	string last_text;
 public:
 	int id;
 	Menu* fa;
@@ -142,6 +147,7 @@ public:
 	Menu () {
 		this -> fa = nullptr;
 		this -> lst = nullptr;
+		this -> fold_button = nullptr;
 		this -> son.clear();
 		this -> position = global_position = COORD{0, 0};
 		this -> height = 2;
@@ -158,6 +164,7 @@ public:
 		this -> recent_color = default_color;
 		this -> last_visible = false;
 		this -> auto_position = true;
+		this -> last_text = "";
 	}
 	void set_position (short x, short y) {
 		position = COORD{x, y};
@@ -169,9 +176,30 @@ public:
 		menu -> fa = this;
 		son.push_back(menu);
 	}
+private:
+	void add_fold_button(Fold_button* fold_button);
+public:
+	virtual void print(bool typ = true);
+	virtual Call_back update(bool is_root = true);
+	virtual Menu* get_class_name() { return this; }
+};
+
+class Fold_button : public Menu {
+private:
+	bool last_open;
+public:
+	bool open;
+	string close_text;
+	string open_text;
+	Fold_button (): Menu() {
+		this -> close_text = "→";
+		this -> open_text = "↓";
+		this -> last_open = false;
+		this -> open = true;
+	}
 	
-	void print(bool typ = true);
-	Call_back update(bool is_root = true);
+	virtual Call_back update(bool is_root = true);
+	virtual Fold_button* get_class_name() { return this; }
 };
 
 Menu root;
@@ -184,6 +212,14 @@ void Menu::fold() {
 void Menu::unfold(){
 	folded = false;
 	root.update(true);
+}
+
+void Menu::add_fold_button(Fold_button* fold_button) {
+	this -> fold_button = fold_button;
+	fold_button -> fa = this;
+	son.push_back(fold_button);
+	this -> fold_button -> set_auto_position(false);
+	this -> fold_button -> set_position(((text.size() - 1)/ 20 + 1) * 20 ,0);
 }
 
 struct output_content{
@@ -217,11 +253,13 @@ void fresh_print() {
 }
 
 void Menu::print(bool typ) {
-	if (global_position != last_global_position) { // clear old
-		string s(text.size(), ' ');
+	if (global_position != last_global_position || last_text != text) { // clear old
+		string s(last_text.size(), ' ');
 		clear_cache.push_back(output_content(default_color, last_global_position + COORD{deep, 0}*2,s));
 		last_global_position = global_position;
+		last_text = text;
 	}
+	
 	
 	if (typ) { // output new
 		if (!real_visible) return;
@@ -256,19 +294,28 @@ Call_back Menu::update(bool is_root) {
 		if (!get_mouse_event()) return Call_back();
 	}
 	
+	if (typeid(*(this -> get_class_name())) == typeid(Menu) && foldable && fold_button == nullptr) {
+		Fold_button button;
+		add_fold_button(&button);
+	}
+	
 	Call_back ret;
 	
 	if (recent_mouse_position.Y == global_position.Y &&
 		recent_mouse_position.X >= (global_position.X + deep * 2) &&
 		recent_mouse_position.X <= (global_position.X + deep * 2) + (short)text.size() - 1 && real_visible && clickable) {
 		recent_color = highlight_color;
-		if (recent_mouse_event.dwButtonState && recent_mouse_event.dwButtonState != MOUSE_WHEELED) {
+		if (recent_mouse_event.dwButtonState && recent_mouse_event.dwButtonState != MOUSE_WHEELED && !pressed) {
 			recent_color = click_color;
 			ret.push_back(id);
+			pressed = true;
+		} else if (!recent_mouse_event.dwButtonState) {
+			pressed = false;
 		}
 	} else {
 		recent_color = color;
 	}
+	
 	
 	if (recent_color != last_color || last_visible != real_visible || global_position != last_global_position) {
 		print(real_visible);
@@ -287,6 +334,17 @@ Call_back Menu::update(bool is_root) {
 	
 	return ret;
 }
+
+Call_back Fold_button::update(bool is_root) {
+	return Call_back();
+	Call_back ret = this -> Menu::update();
+	return ret;
+	// TODO
+}
+
+
+
+// Console command
 
 
 void set_color(Color color) {
@@ -346,7 +404,9 @@ void stop() {
 
 /*
 TODO
-fold
+add fold arrow
 add foldable permiission
 positin update
 */
+
+//↓ →
