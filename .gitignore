@@ -3,7 +3,7 @@ menu.hpp.gch
 Program_Checker.exe
 Program_Checker_Plus.exe
 Screem_element_lib.h.gch
-dosomething.bat
 imgui
 test.exe
-
+start.bat
+del.bat
