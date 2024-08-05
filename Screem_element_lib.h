@@ -193,16 +193,17 @@ public:
 	void set_auto_position (bool auto_position) { this -> auto_position = auto_position; }
 	void set_position      (short x, short y)   { this -> position = COORD{x, y}; }
 	void set_position      (COORD position)     { this -> position = position; }
-	COORD get_position()        { return position; }
+	void set_height        (short height)       { this -> height = height; }
+	COORD get_position       () { return position; }
 	COORD get_global_position() { return global_position; }
-	short get_height ()         { return height; }
+	short get_height         () { return height; }
 	// visible
 	void set_visible (bool visible) { this -> visible = visible; }
-	bool get_visible () { return visible; }
+	bool get_visible      () { return visible; }
 	bool get_real_visible () { return real_visible; }
 	// fold
-	void fold()   { folded = true; }
-	void unfold() { folded = false; }
+	void fold   () { folded = true; }
+	void unfold () { folded = false; }
 	void set_foldable  (bool foldable)  { this -> foldable = foldable; }
 	void set_clickable (bool clickable) { this -> clickable = clickable; }
 	bool get_foldable  () { return foldable; }
@@ -223,19 +224,6 @@ private:
 	virtual Menu* get_class_name() { return this; }
 	void cal_height();
 };
-
-void Menu::set_text(string text) {
-	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\r')
-		text.erase(text.begin() + i, text.begin() + i), i--;
-	this -> text = text;
-	cal_height();
-}
-
-void Menu::cal_height() {
-	height = 1;
-	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n')
-		height++;
-}
 
 int psz = 9999;
 
@@ -266,6 +254,19 @@ public:
 };
 
 Menu root;
+
+void Menu::set_text(string text) {
+	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\r')
+		text.erase(text.begin() + i, text.begin() + i), i--;
+	this -> text = text;
+	if (auto_position) cal_height();
+}
+
+void Menu::cal_height() {
+	height = 1;
+	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n')
+		height++;
+}
 
 void Menu::add_son(Menu* menu, bool typ) {
 	if (!son.empty()) menu -> lst = son.back();
@@ -360,7 +361,7 @@ Call_back Menu::update(bool is_root) { // update -------------------------------
 	
 	if (typeid(*(this -> get_class_name())) == typeid(Fold_button)) {
 		height = -1;
-	} else {
+	} else if (auto_position) {
 		cal_height();
 	}
 	
