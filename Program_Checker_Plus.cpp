@@ -11,6 +11,7 @@ int main() {
 	button1.set_visible(true);
 	button1.set_clickable(true);
 	button1.set_id(1);
+	button1.set_foldable(true);
 	root.add_son(&button1);
 	
 	Menu button2;
@@ -23,6 +24,7 @@ int main() {
 	
 	Menu button3;
 	button3.set_text("hello my friends_3.");
+	button3.add_text("\nhang ma lang");
 	button3.set_visible(true);
 	button3.set_clickable(true);
 	button3.set_id(3);
@@ -33,7 +35,7 @@ int main() {
 	button4.set_visible(true);
 	button4.set_clickable(true);
 	button4.set_id(4);
-	root.add_son(&button4);
+	button2.add_son(&button4);
 	
 	start();
 	while (1) {

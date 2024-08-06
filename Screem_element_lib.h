@@ -1,10 +1,12 @@
 #ifndef SCREEMELEMENTLIB
 #define SCREEMELEMENTLIB
 
-#include<windows.h>
+
 #include<string>
 #include<vector>
 #include<iostream> // test
+#include<cassert>
+#include<windows.h>
 
 using std::string;
 using std::vector;
@@ -89,13 +91,17 @@ public:
 	}
 };
 
-struct output_content{
+struct output_content{ // print --------------------------------------------------------------------------
 	Color color;
 	COORD position;
 	string text;
-	output_content(Color color, COORD position, string text) {
+	bool typ;
+	short deep;
+	output_content(Color color, COORD position, short deep, bool typ, string text) {
 		this -> color = color;
 		this -> position = position;
+		this -> deep = deep;
+		this -> typ = typ;
 		this -> text = text;
 	}
 };
@@ -103,10 +109,23 @@ struct output_content{
 vector<output_content> output_cache;
 vector<output_content> clear_cache;
 
-void print(output_content output) {
+void print(output_content output) { // TODO
 	set_mouse_position(output.position);
+	if (output.deep > 0) {
+		set_color(default_color);
+		for (int i = 0; i < output.deep - 2; i++) putchar(" -"[output.typ]);
+		putchar(" >"[output.typ]);
+		putchar(' ');
+	}
 	set_color(output.color);
-	printf("%s", output.text.data());
+	short cnt = 0;
+	for (size_t i = 0; i < output.text.size(); i++) {
+		if (output.text[i] != '\n') {
+			putchar(output.text[i]);
+		} else {
+			set_mouse_position(output.position + COORD{output.deep, ++cnt});
+		}
+	}
 }
 
 void fresh_print() {
@@ -140,6 +159,7 @@ private:
 	COORD last_global_position;
 	COORD global_position;
 	COORD position;
+	short deep;
 	bool auto_position;
 	// visible
 	bool last_visible;
@@ -150,7 +170,6 @@ private:
 	bool folded;
 	bool foldable;
 	// others
-	short deep;
 	bool clickable;
 protected:
 	string text;
@@ -194,9 +213,11 @@ public:
 	void set_position      (short x, short y)   { this -> position = COORD{x, y}; }
 	void set_position      (COORD position)     { this -> position = position; }
 	void set_height        (short height)       { this -> height = height; }
-	COORD get_position       () { return position; }
-	COORD get_global_position() { return global_position; }
-	short get_height         () { return height; }
+	void set_deep          (short deep)         { this -> deep = deep; }
+	COORD get_position        () { return position; }
+	COORD get_global_position () { return global_position; }
+	short get_height          () { return height; }
+	short get_deep            () { return deep; }
 	// visible
 	void set_visible (bool visible) { this -> visible = visible; }
 	bool get_visible      () { return visible; }
@@ -210,7 +231,8 @@ public:
 	bool get_folded    () { return folded; }
 	bool get_clickable () { return clickable; }
 	// text
-	void set_text(string text);
+	void set_text (string text);
+	void add_text (string text) { set_text(this -> text + text); }
 	string get_text () { return text; }
 	// others
 	void set_id (int id) { this -> id = id; }
@@ -223,6 +245,7 @@ private:
 	virtual void print(bool typ = true);
 	virtual Menu* get_class_name() { return this; }
 	void cal_height();
+	bool mouse_on_button();
 };
 
 int psz = 9999;
@@ -280,7 +303,7 @@ void Menu::add_fold_button(Fold_button* fold_button) {
 	this -> fold_button -> clickable = true;
 	this -> fold_button -> visible = true;
 	this -> fold_button -> set_auto_position(false);
-	this -> fold_button -> set_position(((text.size() - 1)/ 20 + 1) * 20 ,0);
+	this -> fold_button -> set_position(((text.size() + deep*2)/ 5 + 1) * 5 ,0); //TODO
 	son.push_back(fold_button);
 }
 
@@ -289,7 +312,8 @@ void Menu::print(bool typ) { // print ------------------------------------------
 	// clear old
 	if (global_position != last_global_position || last_text != text) { 
 		string s(last_text.size(), ' ');
-		clear_cache.push_back(output_content(default_color, last_global_position + COORD{deep, 0}*2,s));
+		for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n') s[i] = '\n';
+		clear_cache.push_back(output_content(default_color, last_global_position , deep*2, false, s));
 		last_global_position = global_position;
 		last_text = text;
 	}
@@ -297,10 +321,11 @@ void Menu::print(bool typ) { // print ------------------------------------------
 	// output new
 	if (typ) {
 		if (!real_visible) return;
-		output_cache.push_back(output_content(recent_color, global_position + COORD{deep, 0}*2, text));
+		output_cache.push_back(output_content(recent_color, global_position, deep*2, true, text));
 	} else {
 		string s(text.size(), ' ');
-		clear_cache.push_back(output_content(default_color, last_global_position + COORD{deep, 0}*2,s));
+		for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n') s[i] = '\n';
+		clear_cache.push_back(output_content(default_color, last_global_position, deep*2, false, s));
 	}
 }
 
@@ -319,7 +344,10 @@ Call_back Menu::update(bool is_root) { // update -------------------------------
 		global_position = position + fa -> global_position;
 		real_visible = (visible) && (fa -> real_visible) &&
 				(!(fa -> folded) || typeid(*(this -> get_class_name())) == typeid(Fold_button));
-		this -> deep = fa -> deep + 1;
+		if (typeid(*(this -> get_class_name())) == typeid(Menu))
+			this -> deep = fa -> deep + 1;
+		else
+			this -> deep = 0;
 	} else {
 		global_position = position;
 		real_visible = visible;
@@ -336,9 +364,7 @@ Call_back Menu::update(bool is_root) { // update -------------------------------
 	
 	Call_back ret;
 	
-	if (recent_mouse_position.Y == global_position.Y &&
-		recent_mouse_position.X >= (global_position.X + deep * 2) &&
-		recent_mouse_position.X <= (global_position.X + deep * 2) + (short)text.size() - 1 && real_visible && clickable) {
+	if ( mouse_on_button() && real_visible && clickable) {
 		recent_color = highlight_color;
 		if (recent_mouse_event.dwButtonState && recent_mouse_event.dwButtonState != MOUSE_WHEELED && !pressed) {
 			recent_color = click_color;
@@ -367,7 +393,7 @@ Call_back Menu::update(bool is_root) { // update -------------------------------
 	
 	for (Menu* menu: son) {
 		ret += (menu -> update(false));
-		if (!folded) height += menu -> height + 1; // 
+		if (!folded) height += menu -> height + 1;
 	}
 	
 	if (is_root) {
@@ -375,6 +401,16 @@ Call_back Menu::update(bool is_root) { // update -------------------------------
 	}
 	
 	return ret;
+}
+
+
+bool Menu::mouse_on_button() {
+	int h = 1;
+	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n') h++;
+	return recent_mouse_position.Y >= global_position.Y &&
+			recent_mouse_position.Y <= global_position.Y + h - 1 &&
+			recent_mouse_position.X >= (global_position.X + deep * 2) &&
+			recent_mouse_position.X <= (global_position.X + deep * 2) + (short)text.size() - 1;
 }
 
 Call_back Fold_button::update(bool is_root) { // update ----------------------------------------------------
@@ -468,6 +504,7 @@ void start() {
 	set_color(default_color);
 	root.set_visible(true);
 	root.update(1);
+	root.set_deep(0);
 }
 
 void stop() {
