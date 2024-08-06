@@ -1,4 +1,5 @@
 #include<iostream>
+#include<bits/stdc++.h>
 #include<string>
 #include<windows.h>
 
@@ -146,7 +147,21 @@ void testing() {
 		printf("Test Running...\n");
 		system("Tested_Program.exe < .\\task\\in.txt > .\\task\\out.txt");
 		printf("check ...");
+		
+		
+		
+//		std::ifstream in1;
+//		std::ifstream in2;
+//		in1.open(".\\task\\out.txt");
+//		in2.open(".\\task\\ans.txt");
+//		long double a, b;
+//		in1 >> a;
+//		in1.close();
+//		in2 >> b;
+//		in2.close();
+		
 		if (system("fc .\\task\\ans.txt .\\task\\out.txt")) {
+//			if (abs(a - b) > 1e-6) {
 			string s_in = "copy .\\task\\in.txt .\\task\\in" + toString(++sum) + ".txt";
 			string s_out = "copy .\\task\\out.txt .\\task\\out" + toString(sum) + ".txt";
 			string s_ans = "copy .\\task\\ans.txt .\\task\\ans" + toString(sum) + ".txt";
