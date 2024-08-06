@@ -96,12 +96,14 @@ struct output_content{ // print ------------------------------------------------
 	COORD position;
 	string text;
 	bool typ;
+	bool indent_line;
 	short deep;
-	output_content(Color color, COORD position, short deep, bool typ, string text) {
+	output_content(Color color, COORD position, short deep, bool typ, bool indent_line, string text) {
 		this -> color = color;
 		this -> position = position;
 		this -> deep = deep;
 		this -> typ = typ;
+		this -> indent_line = indent_line;
 		this -> text = text;
 	}
 };
@@ -109,13 +111,15 @@ struct output_content{ // print ------------------------------------------------
 vector<output_content> output_cache;
 vector<output_content> clear_cache;
 
-void print(output_content output) { // TODO
+void print(output_content output) {
 	set_mouse_position(output.position);
-	if (output.deep > 0) {
+	if (output.deep > 0 && output.indent_line) {
 		set_color(default_color);
 		for (int i = 0; i < output.deep - 2; i++) putchar(" -"[output.typ]);
 		putchar(" >"[output.typ]);
 		putchar(' ');
+	} else {
+		set_mouse_position(output.position + COORD{output.deep, 0});
 	}
 	set_color(output.color);
 	short cnt = 0;
@@ -145,30 +149,37 @@ void fresh_print() {
 class Menu { // Menu -------------------------------------------------------------------------------------
 private:
 	bool pressed;
+	
 	// relation
 	Fold_button* fold_button;
 	Menu* lst;
 	vector<Menu*> son;
+	
 	// Color
 	Color last_color;
 	Color recent_color;
 	Color normal_color;
 	Color highlight_color;
 	Color click_color;
+	
 	// position
 	COORD last_global_position;
 	COORD global_position;
 	COORD position;
-	short deep;
 	bool auto_position;
+	short deep;
+	bool indent_line;
+	
 	// visible
 	bool last_visible;
 	bool visible;
 	bool real_visible;
 	string last_text;
+	
 	// fold
 	bool folded;
 	bool foldable;
+	
 	// others
 	bool clickable;
 protected:
@@ -178,26 +189,43 @@ protected:
 	Menu* fa;
 public:
 	Menu () {
-		this -> fa = nullptr;
-		this -> lst = nullptr;
+		this -> pressed = false;
+		
+		// realations
 		this -> fold_button = nullptr;
+		this -> lst = nullptr;
 		this -> son.clear();
-		this -> position = global_position = COORD{0, 0};
-		this -> height = -1;
-		this -> text = "";
-		this -> folded = false;
-		this -> visible = false;
-		this -> real_visible = false;
-		this -> clickable = false;
-		this -> foldable = false;
+		this -> fa = nullptr;
+		
+		// color
+		this -> last_color = default_highlight_color;
+		this -> recent_color = default_color;
 		this -> normal_color = default_color;
 		this -> highlight_color = default_highlight_color;
 		this -> click_color = default_click_color;
-		this -> last_color = default_highlight_color;
-		this -> recent_color = default_color;
-		this -> last_visible = false;
+		
+		// position
+		this -> last_global_position = COORD{0, 0};
+		this -> global_position = COORD{0, 0};
+		this -> position = COORD{0, 0};
 		this -> auto_position = true;
+		this -> deep = 0;
+		this -> height = -1;
+		this -> indent_line = true;
+		
+		// text
 		this -> last_text = "";
+		this -> text = "";
+		
+		// visible
+		this -> last_visible = false;
+		this -> visible = false;
+		this -> real_visible = false;
+		
+		// fold
+		this -> folded = false;
+		this -> foldable = false;
+		this -> clickable = false;
 	}
 	// relation
 	void add_son(Menu* menu, bool typ = true);
@@ -214,10 +242,12 @@ public:
 	void set_position      (COORD position)     { this -> position = position; }
 	void set_height        (short height)       { this -> height = height; }
 	void set_deep          (short deep)         { this -> deep = deep; }
+	void set_indent_line   (bool indent_line)   { this -> indent_line = indent_line; }
 	COORD get_position        () { return position; }
 	COORD get_global_position () { return global_position; }
 	short get_height          () { return height; }
 	short get_deep            () { return deep; }
+	bool get_indent_line      () { return indent_line; }
 	// visible
 	void set_visible (bool visible) { this -> visible = visible; }
 	bool get_visible      () { return visible; }
@@ -303,7 +333,8 @@ void Menu::add_fold_button(Fold_button* fold_button) {
 	this -> fold_button -> clickable = true;
 	this -> fold_button -> visible = true;
 	this -> fold_button -> set_auto_position(false);
-	this -> fold_button -> set_position(((text.size() + deep*2)/ 5 + 1) * 5 ,0); //TODO
+	size_t i; for (i = 0; i < text.size(); i++) if (text[i] == '\n') break;
+	this -> fold_button -> set_position(i + deep*2 + 5, 0); //TODO
 	son.push_back(fold_button);
 }
 
@@ -313,7 +344,7 @@ void Menu::print(bool typ) { // print ------------------------------------------
 	if (global_position != last_global_position || last_text != text) { 
 		string s(last_text.size(), ' ');
 		for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n') s[i] = '\n';
-		clear_cache.push_back(output_content(default_color, last_global_position , deep*2, false, s));
+		clear_cache.push_back(output_content(default_color, last_global_position , deep*2, false, indent_line, s));
 		last_global_position = global_position;
 		last_text = text;
 	}
@@ -321,11 +352,11 @@ void Menu::print(bool typ) { // print ------------------------------------------
 	// output new
 	if (typ) {
 		if (!real_visible) return;
-		output_cache.push_back(output_content(recent_color, global_position, deep*2, true, text));
+		output_cache.push_back(output_content(recent_color, global_position, deep*2, true, indent_line, text));
 	} else {
 		string s(text.size(), ' ');
 		for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n') s[i] = '\n';
-		clear_cache.push_back(output_content(default_color, last_global_position, deep*2, false, s));
+		clear_cache.push_back(output_content(default_color, last_global_position, deep*2, false, indent_line, s));
 	}
 }
 

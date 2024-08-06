@@ -27,6 +27,7 @@ int main() {
 	button3.add_text("\nhang ma lang");
 	button3.set_visible(true);
 	button3.set_clickable(true);
+	button3.set_indent_line(false);
 	button3.set_id(3);
 	button2.add_son(&button3);
 	
@@ -35,6 +36,7 @@ int main() {
 	button4.set_visible(true);
 	button4.set_clickable(true);
 	button4.set_id(4);
+	button4.set_foldable(true);
 	button2.add_son(&button4);
 	
 	start();
