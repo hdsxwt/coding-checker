@@ -5,7 +5,7 @@
 #include<string>
 #include<vector>
 #include<typeinfo>
-#include"mywindows.h"
+#include<windows.h>
 
 using std::string;
 using std::vector;
@@ -19,7 +19,7 @@ bool operator != (const COORD a, const COORD b) { return !(a == b); }
 
 class Color;
 class Button;
-class Menu;
+class Button;
 class Call_back;
 class Fold_button;
 
@@ -143,14 +143,14 @@ void fresh_print() {
 }
 
 
-class Menu { // Menu -------------------------------------------------------------------------------------
+class Button { // Button -------------------------------------------------------------------------------------
 private:
 	bool pressed;
 	
 	// relation
 	Fold_button* fold_button;
-	Menu* lst;
-	vector<Menu*> son;
+	Button* lst;
+	vector<Button*> son;
 	
 	// Color
 	Color last_color;
@@ -183,9 +183,9 @@ protected:
 	string text;
 	short height;
 	int id;
-	Menu* fa;
+	Button* fa;
 public:
-	Menu () {
+	Button () {
 		this -> pressed = false;
 		
 		// realations
@@ -225,7 +225,7 @@ public:
 		this -> clickable = false;
 	}
 	// relation
-	void add_son(Menu* menu, bool typ = true);
+	void add_son(Button* Button, bool typ = true);
 	// color
 	void set_normal_color    (Color normal_color) { this -> normal_color = normal_color; }
 	void set_highlight_color (Color normal_color) { this -> highlight_color = highlight_color; }
@@ -270,21 +270,21 @@ public:
 private:
 	void add_fold_button(Fold_button* fold_button);
 	virtual void print(bool typ = true);
-	virtual Menu* get_class_name() { return this; }
+	virtual Button* get_class_name() { return this; }
 	void cal_height();
 	bool mouse_on_button();
 };
 
 int psz = 9999;
 
-class Fold_button : public Menu { // Fold_BUtton -----------------------------------------------------------------
+class Fold_button : public Button { // Fold_BUtton -----------------------------------------------------------------
 private:
 	bool last_open;
 	bool open;
 	string close_text;
 	string open_text;
 public:
-	Fold_button (): Menu() {
+	Fold_button (): Button() {
 		this -> close_text = "+";
 		this -> open_text = "-";
 		this -> text = close_text;
@@ -303,28 +303,28 @@ public:
 	virtual Fold_button* get_class_name() { return this; }
 };
 
-Menu root;
+Button root;
 
-void Menu::set_text(string text) {
+void Button::set_text(string text) {
 	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\r')
 		text.erase(text.begin() + i, text.begin() + i), i--;
 	this -> text = text;
 	if (auto_position) cal_height();
 }
 
-void Menu::cal_height() {
+void Button::cal_height() {
 	height = 1;
 	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n')
 		height++;
 }
 
-void Menu::add_son(Menu* menu, bool typ) {
-	if (!son.empty()) menu -> lst = son.back();
-	menu -> fa = this;
-	son.push_back(menu);
+void Button::add_son(Button* Button, bool typ) {
+	if (!son.empty()) Button -> lst = son.back();
+	Button -> fa = this;
+	son.push_back(Button);
 }
 
-void Menu::add_fold_button(Fold_button* fold_button) {
+void Button::add_fold_button(Fold_button* fold_button) {
 	this -> fold_button = fold_button;
 	this -> fold_button -> fa = this;
 	this -> fold_button -> clickable = true;
@@ -336,7 +336,7 @@ void Menu::add_fold_button(Fold_button* fold_button) {
 }
 
 
-void Menu::print(bool typ) { // print --------------------------------------------------------------------------
+void Button::print(bool typ) { // print --------------------------------------------------------------------------
 	// clear old
 	if (global_position != last_global_position || last_text != text) { 
 		string s(last_text.size(), ' ');
@@ -357,7 +357,7 @@ void Menu::print(bool typ) { // print ------------------------------------------
 	}
 }
 
-Call_back Menu::update(bool is_root) { // update -------------------------------------------------------------------
+Call_back Button::update(bool is_root) { // update -------------------------------------------------------------------
 	if (auto_position) {
 		if (lst != nullptr) {
 			position.Y = (lst -> height + lst -> position.Y + 1);
@@ -372,7 +372,7 @@ Call_back Menu::update(bool is_root) { // update -------------------------------
 		global_position = position + fa -> global_position;
 		real_visible = (visible) && (fa -> real_visible) &&
 				(!(fa -> folded) || typeid(*(this -> get_class_name())) == typeid(Fold_button));
-		if (typeid(*(this -> get_class_name())) == typeid(Menu))
+		if (typeid(*(this -> get_class_name())) == typeid(Button))
 			this -> deep = fa -> deep + 1;
 		else
 			this -> deep = 0;
@@ -385,7 +385,7 @@ Call_back Menu::update(bool is_root) { // update -------------------------------
 		if (!get_mouse_event()) return Call_back();
 	}
 	
-	if (typeid(*(this -> get_class_name())) == typeid(Menu) && foldable && fold_button == nullptr) {
+	if (typeid(*(this -> get_class_name())) == typeid(Button) && foldable && fold_button == nullptr) {
 		Fold_button *button = new Fold_button();
 		add_fold_button(button);
 	}
@@ -419,9 +419,9 @@ Call_back Menu::update(bool is_root) { // update -------------------------------
 		cal_height();
 	}
 	
-	for (Menu* menu: son) {
-		ret += (menu -> update(false));
-		if (!folded) height += menu -> height + 1;
+	for (Button* Button: son) {
+		ret += (Button -> update(false));
+		if (!folded) height += Button -> height + 1;
 	}
 	
 	if (is_root) {
@@ -432,7 +432,7 @@ Call_back Menu::update(bool is_root) { // update -------------------------------
 }
 
 
-bool Menu::mouse_on_button() {
+bool Button::mouse_on_button() {
 	int h = 1;
 	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n') h++;
 	return recent_mouse_position.Y >= global_position.Y &&
@@ -442,7 +442,7 @@ bool Menu::mouse_on_button() {
 }
 
 Call_back Fold_button::update(bool is_root) { // update ----------------------------------------------------
-	Call_back ret = this -> Menu::update(false);
+	Call_back ret = this -> Button::update(false);
 	
 	if (!ret.empty()) {
 		open = !open;
