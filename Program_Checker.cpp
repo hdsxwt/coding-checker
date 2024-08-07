@@ -172,7 +172,7 @@ void testing() {
 		}
 	}
 	char message[40];
-	sprintf(message, "Done!\nSample: %d\nError: %d\nAC\%: %.2f\%", i, cnt, (double)(i - cnt)/i * 100);
+	sprintf(message, "Done!\nSample: %d\nError: %d\nAC%%: %.2f%%", i, cnt, (double)(i - cnt)/i * 100);
 	MessageBox(NULL, message, "Program Checker", MB_OK); // TODO
 	printf("\n\n");
 }

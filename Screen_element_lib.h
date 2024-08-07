@@ -1,5 +1,5 @@
-#ifndef SCREEMELEMENTLIB
-#define SCREEMELEMENTLIB
+#ifndef SCREENELEMENTLIB
+#define SCREENELEMENTLIB
 
 
 #include<string>
@@ -22,6 +22,19 @@ class Button;
 class Button;
 class Call_back;
 class Fold_button;
+class Screen_element_controller;
+
+class Screen_element_controller {
+public:
+	bool get_mouse_event();
+	void set_color(Color color);
+	void set_mouse_position (const short x, const short y);
+	void set_mouse_position (const COORD cursorPosition);
+	void Set_cursor_visible(bool visible);
+	void Set_console_mode(bool QuickEditMode, bool InsertMode, bool MouseInput);
+	void start();
+	void stop();
+}screen_element_controller;
 
 class Color {
 	#define BLACK 0 // hei
@@ -56,11 +69,6 @@ public:
 const Color default_color = Color(BRIGHTWHITE, BLACK);
 const Color default_highlight_color = Color(BRIGHTCYAN, BLACK);
 const Color default_click_color = Color(GREEN, BLACK);
-
-void set_color(Color color);
-void set_mouse_position(const COORD cursorPosition);
-void set_mouse_position (const short x, const short y);
-bool get_mouse_event();
 
 MOUSE_EVENT_RECORD recent_mouse_event;
 COORD recent_mouse_position;
@@ -109,35 +117,35 @@ vector<output_content> output_cache;
 vector<output_content> clear_cache;
 
 void print(output_content output) {
-	set_mouse_position(output.position);
+	screen_element_controller.set_mouse_position(output.position);
 	if (output.deep > 0 && output.indent_line) {
-		set_color(default_color);
+		screen_element_controller.set_color(default_color);
 		for (int i = 0; i < output.deep - 2; i++) putchar(" -"[output.typ]);
 		putchar(" >"[output.typ]);
 		putchar(' ');
 	} else {
-		set_mouse_position(output.position + COORD{output.deep, 0});
+		screen_element_controller.set_mouse_position(output.position + COORD{output.deep, 0});
 	}
-	set_color(output.color);
+	screen_element_controller.set_color(output.color);
 	short cnt = 0;
 	for (size_t i = 0; i < output.text.size(); i++) {
 		if (output.text[i] != '\n') {
 			putchar(output.text[i]);
 		} else {
-			set_mouse_position(output.position + COORD{output.deep, ++cnt});
+			screen_element_controller.set_mouse_position(output.position + COORD{output.deep, ++cnt});
 		}
 	}
 }
 
 void fresh_print() {
-	set_color(default_color);
+	screen_element_controller.set_color(default_color);
 	for (auto output: clear_cache) {
 		print(output);
 	}
 	for (auto output: output_cache) {
 		print(output);
 	}
-	set_color(default_color);
+	screen_element_controller.set_color(default_color);
 	clear_cache.clear();
 	output_cache.clear();
 }
@@ -382,7 +390,7 @@ Call_back Button::update(bool is_root) { // update -----------------------------
 	}
 	
 	if (id == 0) { // the root
-		if (!get_mouse_event()) return Call_back();
+		if (!screen_element_controller.get_mouse_event()) return Call_back();
 	}
 	
 	if (typeid(*(this -> get_class_name())) == typeid(Button) && foldable && fold_button == nullptr) {
@@ -462,16 +470,7 @@ Call_back Fold_button::update(bool is_root) { // update ------------------------
 	return Call_back();
 }
 
-
-
-
-
-
-
-
-// Console command
-
-bool get_mouse_event() {
+bool Screen_element_controller::get_mouse_event() {
 	INPUT_RECORD record;
 	DWORD temp;
 	
@@ -484,26 +483,26 @@ bool get_mouse_event() {
 	return false;
 }
 
-void set_color(Color color) {
+void Screen_element_controller::set_color(Color color) {
 	const HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(handle, color.mix());
 }
 
-void set_mouse_position (const short x, const short y) {
+void Screen_element_controller::set_mouse_position (const short x, const short y) {
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{x, y});
 }
-void set_mouse_position (const COORD cursorPosition) {
+void Screen_element_controller::set_mouse_position (const COORD cursorPosition) {
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cursorPosition);
 }
 
-void Set_cursor_visible(bool visible) {
+void Screen_element_controller::Set_cursor_visible(bool visible) {
 	CONSOLE_CURSOR_INFO CursorInfo;
 	GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &CursorInfo);
 	CursorInfo.bVisible = visible;
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &CursorInfo);
 }
 
-void Set_console_mode(bool QuickEditMode, bool InsertMode, bool MouseInput) {
+void Screen_element_controller::Set_console_mode(bool QuickEditMode, bool InsertMode, bool MouseInput) {
 	DWORD mode;
 	GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &mode);
 	if (QuickEditMode) {
@@ -524,7 +523,7 @@ void Set_console_mode(bool QuickEditMode, bool InsertMode, bool MouseInput) {
 	SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), mode);
 }
 
-void start() {
+void Screen_element_controller::start() {
 	Set_cursor_visible(false);
 	Set_console_mode(false, false, true);
 	FlushConsoleInputBuffer(GetStdHandle(STD_OUTPUT_HANDLE));
@@ -535,10 +534,12 @@ void start() {
 	root.set_deep(0);
 }
 
-void stop() {
+void Screen_element_controller::stop() {
 	Set_cursor_visible(true);
 	Set_console_mode(true, true, true);
 }
+
+// Console command
 
 #endif
 
