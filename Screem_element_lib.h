@@ -4,14 +4,11 @@
 
 #include<string>
 #include<vector>
-#include<iostream> // test
-#include<cassert>
-#include<windows.h>
+#include<typeinfo>
+#include"mywindows.h"
 
 using std::string;
 using std::vector;
-using std::cout;
-using std::endl;
 
 
 COORD operator + (const COORD a, const COORD b) { return COORD{(short)(a.X + b.X), (short)(a.Y + b.Y)}; }
@@ -334,7 +331,7 @@ void Menu::add_fold_button(Fold_button* fold_button) {
 	this -> fold_button -> visible = true;
 	this -> fold_button -> set_auto_position(false);
 	size_t i; for (i = 0; i < text.size(); i++) if (text[i] == '\n') break;
-	this -> fold_button -> set_position(i + deep*2 + 5, 0); //TODO
+	this -> fold_button -> set_position(i + deep*2 + 5, 0);
 	son.push_back(fold_button);
 }
 
