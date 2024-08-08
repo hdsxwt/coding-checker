@@ -1,4 +1,4 @@
-//#include<windows.h>
+#include<windows.h>
 #include "checker_lib.h"
 #include "Screen_element_lib.h"
 #include "json.hpp"
@@ -9,5 +9,13 @@ using nlohmann::json;
 
 int main() {
 	checker_controller.start();
-	screen_element_controller.start();
 }
+
+/*
+
+json main -> siz: int;
+		  -> names: list
+json -> cnt;
+
+
+*/
