@@ -427,9 +427,9 @@ Call_back Button::update(bool is_root) { // update -----------------------------
 		cal_height();
 	}
 	
-	for (Button* Button: son) {
-		ret += (Button -> update(false));
-		if (!folded) height += Button -> height + 1;
+	for (Button* button: son) {
+		ret += (button -> update(false));
+		if (!folded && button -> auto_position) height += button -> height + 1;
 	}
 	
 	if (is_root) {
