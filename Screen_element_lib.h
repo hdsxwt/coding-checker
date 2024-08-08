@@ -2,10 +2,14 @@
 #define SCREENELEMENTLIB
 
 
-#include<string>
-#include<vector>
-#include<typeinfo>
-#include<windows.h>
+#include <string>
+#include <vector>
+#include <typeinfo>
+
+#include <windef.h>
+#include <winbase.h>
+#include <wingdi.h>
+#include <wincon.h>
 
 using std::string;
 using std::vector;

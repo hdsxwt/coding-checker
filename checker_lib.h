@@ -2,8 +2,10 @@
 #define CHECKERLIB
 
 #include "json.hpp"
-#include<windows.h>
-#include<bits/stdc++.h>
+#include <Shldisp.h>
+
+#include<fstream>
+
 
 using namespace std;
 
