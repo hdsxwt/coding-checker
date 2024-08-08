@@ -30,15 +30,25 @@ bool create_directory(const string& dirName) {
 class Checker;
 class Checker_controller;
 
+const int hshb = 128;
+const int mod = 998244353;
+
+
+int hsh(string str) {
+	int ret = 0;
+	for (size_t i = 0; i < str.size(); i++) ret = ((long long)ret * hshb % mod + str[i]) % mod;
+	return ret;
+}
 
 
 class Checker { // tested
 private:
+	int id;
 	short siz;
 	string path;
 	string name;
 	short mode;
-	bool vis_tested; // TODO
+	bool vis_tested;
 	bool vis_ans;
 	bool vis_data;
 #define CHECKERMODE_WHOLEMATCH 0
@@ -47,13 +57,16 @@ private:
 #define CHECKERMODE_FLOAT5 3
 #define CHECKERMODE_FLOAT8 4
 public:
+	void set_id (string name) { set_id(hsh(name)); }
+	void set_id   (int id) {this -> id = id; }
 	void set_siz  (short siz) {this -> siz = siz;}
 	void set_path (string path) { this -> path = path; }
 	void set_mode (short mode) {
-		if (mode < 0 || mode > 3) throw ("Not a Cheker mode.");
+		if (mode < 0 || mode > 4) throw ("Not a Cheker mode.");
 		this -> mode = mode;
 	}
 	void set_name (string name) { this -> name = name; }
+	int get_id      () { return id; }
 	short get_mode  () { return mode; }
 	short get_siz   () { return siz; }
 	string get_path () { return path; }
@@ -149,7 +162,6 @@ private:
 	}
 public:
 	void write() {
-		// TODO add new things
 		json config;
 		config["siz"] = siz;
 		config["mode"] = mode;
@@ -188,6 +200,7 @@ public:
 		return true;
 	}
 	Checker () {
+		id = 0;
 		siz = 0;
 		path = "";
 		name = "";
@@ -195,11 +208,14 @@ public:
 		vis_ans = vis_data = vis_tested = false;
 	}
 	bool compile_file(string file) {
-		if (file == tested_program) vis_tested =  true;
-		if (file == data_generater) vis_data =  true;
-		if (file == answer_generator) vis_ans =  true;
 		string command = "g++ \"" + path + file + ".cpp\" -o \"" + path + file + ".exe\" -std=c++14 -Wall -O2";
-		return system(command.data());
+		bool ret = system(command.data()) == 0;
+		if (ret) {
+			if (file == tested_program) vis_tested =  true;
+			if (file == data_generater) vis_data =  true;
+			if (file == answer_generator) vis_ans =  true;
+		}
+		return ret;
 	}
 	void edit_file(string file) {
 		string command = "notepad \"" + path + file + ".cpp \" ";
@@ -247,8 +263,13 @@ public:
 };
 
 class Checker_controller {
+private:
+	bool illegal (char c) {
+		return c == '\\' || c == '/' || c == ':' || c == '*' || c == '?' || c == '\"' || c == '!' ||
+		c == '<' || c == '>' || c == '|';
+	}
 public:
-	int siz;
+	size_t siz;
 	vector<Checker*> checkers;
 	void write() {
 		json config;
@@ -263,7 +284,6 @@ public:
 		out.close();
 	}
 	bool start() {
-		// TODO controller start
 		if (!directory_exists(HOME)) {
 			if (!create_directory(HOME)) return false;
 		}
@@ -279,17 +299,19 @@ public:
 			in.close();
 			siz = config["siz"];
 			vector<string> names = config["names"].get<vector<string>>();
-			for (int i = 0; i < siz; i++) {
+			
+			if (siz != names.size()) return false;
+			
+			for (size_t i = 0; i < siz; i++) {
 				Checker* checker = new Checker();
 				checkers.push_back(checker);
-				for (size_t j = 0; j < names[i].size(); i++) {
+				for (size_t j = 0; j < names[i].size(); j++) {
 					char &c = names[i][j];
-					if (c == '\\' || c == '/' || c == ':' || c == '*' || c == '?' || c == '\"' || 
-							c == '<' || c == '>' || c == '|')
-						c = '_';
+					if (illegal(c)) c = '_';
 				}
 				checker -> set_name(names[i]);
 				checker -> set_path(HOME + names[i] + "\\");
+				checker -> set_id(names[i]);
 				if (!checker -> start()) return false;
 			}
 		}
@@ -300,21 +322,50 @@ public:
 	
 	void stop() {
 		write();
-		// TODO stop
 	}
-	void add_new_task (string name) {
+	bool add_new_task (string name) {
+		Checker* checker = new Checker();
+		checkers.push_back(checker);
+		for (size_t i = 0; i < name.size(); i++) {
+			char &c = name[i];
+			if (illegal(c)) c = '_';
+		}
+		checker -> set_name(name);
+		checker -> set_path(HOME + name + "\\");
+		checker -> set_id(name);
+		if (!checker -> start()) return false;
+		siz++;
 		write();
-		// TODO add_new_task
+		return true;
 	}
-	void del_task (string name) {
+private:
+	void del(int p) {
+		checkers[p] -> remove();
+		siz--;
+		checkers.erase(checkers.begin() + p);
+	}
+public:
+	void del_task (string name) { // TODO
+		for (size_t i = 0; i < siz; i++) {
+			if (checkers[i] -> get_name() == name) {
+				del(i);
+				break;
+			}
+		}
 		write();
-		// TODO_del_task
+	}
+	void del_task (int id) {
+		for (size_t i = 0; i < siz; i++) {
+			if (checkers[i] -> get_id() == id) {
+				del(i);
+				break;
+			}
+		}
+		write();
 	}
 } checker_controller;
 
 #endif
-
-// TODO untested
 
 /*
 using process:
