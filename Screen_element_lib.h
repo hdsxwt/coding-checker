@@ -220,7 +220,7 @@ public:
 		this -> auto_position = true;
 		this -> deep = 0;
 		this -> height = -1;
-		this -> indent_line = true;
+		this -> indent_line = false;
 		
 		// text
 		this -> last_text = "";
@@ -240,15 +240,15 @@ public:
 	void add_son(Button* Button, bool typ = true);
 	// color
 	void set_normal_color    (Color normal_color) { this -> normal_color = normal_color; }
-	void set_highlight_color (Color normal_color) { this -> highlight_color = highlight_color; }
+	void set_highlight_color (Color highlight_color) { this -> highlight_color = highlight_color; }
 	void set_click_color     (Color click_color)  { this -> click_color = click_color; }
 	Color get_normal_color    () { return this -> normal_color; }
 	Color get_highlight_color () { return this -> highlight_color; }
 	Color get_click_color     () { return this -> click_color; }
 	// position
 	void set_auto_position (bool auto_position) { this -> auto_position = auto_position; }
-	void set_position      (short x, short y)   { this -> position = COORD{x, y}; }
-	void set_position      (COORD position)     { this -> position = position; }
+	void set_position      (short x, short y)   { this -> position = COORD{x, y}; auto_position = false; }
+	void set_position      (COORD position)     { this -> position = position; auto_position = false; }
 	void set_height        (short height)       { this -> height = height; }
 	void set_deep          (short deep)         { this -> deep = deep; }
 	void set_indent_line   (bool indent_line)   { this -> indent_line = indent_line; }
