@@ -312,6 +312,7 @@ public:
 	string get_close_text () { return close_text; }
 	// others
 	virtual Call_back update(bool is_root);
+	void reset() { last_open = (fa -> get_folded()); open = !(fa -> get_folded()); }
 	virtual Fold_button* get_class_name() { return this; }
 };
 
@@ -344,6 +345,7 @@ void Button::add_fold_button(Fold_button* fold_button) {
 	this -> fold_button -> set_auto_position(false);
 	size_t i; for (i = 0; i < text.size(); i++) if (text[i] == '\n') break;
 	this -> fold_button -> set_position(i + deep*2 + 5, 0);
+	this -> fold_button -> reset();
 	son.push_back(fold_button);
 }
 
@@ -467,7 +469,7 @@ Call_back Fold_button::update(bool is_root) { // update ------------------------
 			this -> fa -> unfold();
 		} else {
 			text = close_text;
-			fa -> fold();
+			this -> fa -> fold();
 		}
 	}
 	
