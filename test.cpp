@@ -1,12 +1,11 @@
-#include<bits/stdc++.h>
-#include<windows.h>
-#include "json.hpp"
+#include<iostream>
 
 using namespace std;
 
-using nlohmann::json;
-
 int main() {
-	string path = ".\\test\\";
-	RemoveDirectory(path.data());
+	for (int i = 0; i < 100; i++) {
+		putchar('+');
+		putchar('\n');
+		putchar('\n');
+	}
 }
