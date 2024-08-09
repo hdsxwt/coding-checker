@@ -77,20 +77,28 @@ const Color default_click_color = Color(GREEN, BLACK);
 MOUSE_EVENT_RECORD recent_mouse_event;
 COORD recent_mouse_position;
 
+struct Cal_back_content {
+	int id;
+	short typ;
+#define CAL_BACK_CONTENG_CLICK 1
+#define CAL_BACK_CONTENG_DELETE 2
+};
 
 class Call_back {
 public:
-	vector<int> ids;
+	vector<Cal_back_content> ids;
 	void operator += (const Call_back b) {
 		for (auto x: b.ids) {
 			ids.push_back(x);
 		}
 	}
+	
+	
 	Call_back() {
 		ids.clear();
 	}
-	void push_back(int x) {
-		ids.push_back(x);
+	void push_back(int x, short typ = CAL_BACK_CONTENG_CLICK) {
+		ids.push_back({x, typ});
 	}
 	int size() {
 		return ids.size();

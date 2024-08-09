@@ -113,11 +113,11 @@ int main() {
 	while (1) {
 		Call_back callback = root.update();
 		for (auto x: callback.ids) {
-			if (x == 1) {
+			if (x.id == 1) {
 				show_welcome();
-			} else if (x == 3) {
+			} else if (x.id == 3) {
 				stop();
-			} else if (x == 102) {
+			} else if (x.id == 102) {
 				ShellExecute(NULL, "open", "https://github.com/hdsxwt", NULL, NULL, SW_SHOWNORMAL);
 			}
 		}
