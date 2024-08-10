@@ -169,10 +169,6 @@ void fresh_print() {
 	output_cache.clear();
 }
 
-void fresh_delete() {
-	// TODO
-}
-
 
 class Button { // Button -----------------------------------------------------------------------------------------------------------------
 private:
@@ -265,6 +261,7 @@ public:
 		// delete
 		this -> deletable = false;
 	}
+	virtual ~Button() { }
 	// relation
 	void add_son(Button* Button);
 	// color
@@ -300,6 +297,8 @@ public:
 	bool get_clickable () { return clickable; }
 	// del
 	void del();
+	void set_deletable (bool deletable) { this -> deletable = deletable; }
+	bool get_deletable () { return deletable; }
 	// text
 	void set_text (string text);
 	void add_text (string text) { set_text(this -> text + text); }
@@ -320,6 +319,12 @@ private:
 	void cal_height();
 	bool mouse_on_button();
 };
+
+void fresh_delete() {
+	for (Button* button: delete_cache) {
+		delete button;
+	}
+}
 
 int psz = 9999;
 

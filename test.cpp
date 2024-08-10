@@ -11,6 +11,7 @@ int main() {
 	Button button2;
 	button2.set_visible(true);
 	button2.set_text("button2");
+	button2.set_deletable(true);
 	button1.set_id(2);
 	root.add_son(&button1);
 	root.add_son(&button2);
