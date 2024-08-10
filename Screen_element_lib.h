@@ -26,6 +26,7 @@ class Button;
 class Button;
 class Call_back;
 class Fold_button;
+class Del_button;
 class Screen_element_controller;
 
 class Screen_element_controller {
@@ -323,6 +324,12 @@ public:
 	virtual Call_back update(bool is_root);
 	void reset() { last_open = (fa -> get_folded()); open = !(fa -> get_folded()); }
 	virtual Fold_button* get_class_name() { return this; }
+};
+
+class Del_button : public Button {
+public:
+	virtual Call_back update(bool is_root);
+	virtual Del_button* get_class_name() { return this; }
 };
 
 Button root;
