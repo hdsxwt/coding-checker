@@ -10,6 +10,7 @@
 #include <winbase.h>
 #include <wingdi.h>
 #include <wincon.h>
+#include <winuser.h>
 
 using std::string;
 using std::vector;
@@ -81,8 +82,8 @@ COORD recent_mouse_position;
 struct Cal_back_content {
 	int id;
 	short typ;
-#define CAL_BACK_CONTENG_CLICK 1
-#define CAL_BACK_CONTENG_DELETE 2
+#define CALL_BACK_CONTENG_CLICK 1
+#define CALL_BACK_CONTENG_DELETE 2
 };
 
 class Call_back {
@@ -98,7 +99,7 @@ public:
 	Call_back() {
 		ids.clear();
 	}
-	void push_back(int x, short typ = CAL_BACK_CONTENG_CLICK) {
+	void push_back(int x, short typ = CALL_BACK_CONTENG_CLICK) {
 		ids.push_back({x, typ});
 	}
 	int size() {
@@ -107,9 +108,12 @@ public:
 	bool empty() {
 		return ids.empty();
 	}
+	
+	Cal_back_content& operator [] (const int i) { return ids[i]; }
+	const Cal_back_content& operator [] (const int i) const { return ids[i]; }
 };
 
-struct output_content{ // print --------------------------------------------------------------------------
+struct output_content{ // print ------------------------------------------------------------------------------------------------------
 	Color color;
 	COORD position;
 	string text;
@@ -165,7 +169,7 @@ void fresh_print() {
 }
 
 
-class Button { // Button -------------------------------------------------------------------------------------
+class Button { // Button -----------------------------------------------------------------------------------------------------------------
 private:
 	bool pressed;
 	
@@ -198,6 +202,9 @@ private:
 	// fold
 	bool folded;
 	bool foldable;
+	
+	// delete
+	bool deletable; // TODO
 	
 	// others
 	bool clickable;
@@ -299,7 +306,7 @@ private:
 
 int psz = 9999;
 
-class Fold_button : public Button { // Fold_BUtton -----------------------------------------------------------------
+class Fold_button : public Button { // Fold_BUtton ---------------------------------------------------------------------------------------------
 private:
 	bool last_open;
 	bool open;
@@ -366,7 +373,7 @@ void Button::add_fold_button(Fold_button* fold_button) {
 }
 
 
-void Button::print(bool typ) { // print --------------------------------------------------------------------------
+void Button::print(bool typ) { // print ------------------------------------------------------------------------------------------------------
 	// clear old
 	if (global_position != last_global_position || last_text != text) { 
 		string s(last_text.size(), ' ');
@@ -387,7 +394,7 @@ void Button::print(bool typ) { // print ----------------------------------------
 	}
 }
 
-Call_back Button::update(bool is_root) { // update -------------------------------------------------------------------
+Call_back Button::update(bool is_root) { // update -----------------------------------------------------------------------------------------------
 	if (auto_position) {
 		if (lst != nullptr) {
 			position.Y = (lst -> height + lst -> position.Y + 1);
@@ -471,10 +478,10 @@ bool Button::mouse_on_button() {
 			recent_mouse_position.X <= (global_position.X + deep * 2) + (short)text.size() - 1;
 }
 
-Call_back Fold_button::update(bool is_root) { // update ----------------------------------------------------
-	Call_back ret = this -> Button::update(false);
+Call_back Fold_button::update(bool is_root) { // update --------------------------------------------------------------------------------
+	Call_back call_back = this -> Button::update(false);
 	
-	if (!ret.empty()) {
+	if (!call_back.empty()) {
 		open = !open;
 	}
 	
@@ -489,6 +496,20 @@ Call_back Fold_button::update(bool is_root) { // update ------------------------
 		}
 	}
 	
+	return Call_back();
+}
+
+Call_back Del_button::update(bool is_root) { // update ------------------------------------------------------------------------------------------------
+	Call_back call_back = this -> Button::update(false);
+	
+	if (!call_back.empty()) {
+		int ret = MessageBox(NULL, "Do you really want to DELETE the tasks?", "Warning", MB_OKCANCEL|MB_ICONWARNING);
+		if (ret == IDOK) {
+//			fa -> del();
+			call_back.ids[0].typ = CALL_BACK_CONTENG_DELETE;
+			return call_back;
+		}
+	}
 	return Call_back();
 }
 
