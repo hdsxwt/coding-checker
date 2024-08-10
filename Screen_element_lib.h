@@ -180,6 +180,7 @@ private:
 	
 	// relation
 	Fold_button* fold_button;
+	Del_button* del_button;
 	Button* lst;
 	Button* nxt;
 	vector<Button*> son;
@@ -225,6 +226,7 @@ public:
 		
 		// realations
 		this -> fold_button = nullptr;
+		this -> del_button = nullptr;
 		this -> lst = nullptr;
 		this -> nxt = nullptr;
 		this -> son.clear();
@@ -459,6 +461,11 @@ Call_back Button::update(bool is_root) { // update -----------------------------
 	if (typeid(*(this -> get_class_name())) == typeid(Button) && foldable && fold_button == nullptr) {
 		Fold_button *button = new Fold_button();
 		add_fold_button(button);
+	}
+	
+	if (typeid(*(this -> get_class_name())) == typeid(Button) && deletable && del_button == nullptr) {
+		Del_button *button = new Del_button();
+		add_del_button(button);
 	}
 	
 	Call_back ret;
