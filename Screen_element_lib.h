@@ -266,7 +266,7 @@ public:
 		this -> deletable = false;
 	}
 	// relation
-	void add_son(Button* Button, bool typ = true);
+	void add_son(Button* Button);
 	// color
 	void set_normal_color    (Color normal_color) { this -> normal_color = normal_color; }
 	void set_highlight_color (Color highlight_color) { this -> highlight_color = highlight_color; }
@@ -311,6 +311,8 @@ public:
 	virtual Call_back update(bool is_root = true);
 	
 private:
+	void set_fa (Button* fa) { this -> fa = fa;}
+	Button* get_fa () { return fa; }
 	void add_fold_button(Fold_button* fold_button);
 	void add_del_button(Del_button* del_button);
 	virtual void print(bool typ = true);
@@ -382,7 +384,7 @@ void Button::cal_height() {
 		height++;
 }
 
-void Button::add_son(Button* button, bool typ) {
+void Button::add_son(Button* button) {
 	if (!son.empty()) {
 		button -> lst = son.back();
 		son.back() -> nxt = button;
@@ -393,9 +395,9 @@ void Button::add_son(Button* button, bool typ) {
 
 void Button::add_fold_button(Fold_button* fold_button) {
 	this -> fold_button = fold_button;
-	this -> fold_button -> fa = this;
-	this -> fold_button -> clickable = true;
-	this -> fold_button -> visible = true;
+	this -> fold_button -> set_fa(this);
+	this -> fold_button -> set_clickable(true);
+	this -> fold_button -> set_visible(true);
 	this -> fold_button -> set_auto_position(false);
 	size_t i; for (i = 0; i < text.size(); i++) if (text[i] == '\n') break;
 	this -> fold_button -> set_position(i + deep*2 + 5, 0);
@@ -405,7 +407,14 @@ void Button::add_fold_button(Fold_button* fold_button) {
 
 
 void Button::add_del_button(Del_button* del_button) {
-	// TODO
+	this -> del_button = del_button;
+	this -> del_button -> set_fa(this);
+	this -> del_button -> set_clickable(true);
+	this -> del_button -> set_visible(true);
+	this -> del_button -> set_auto_position(false);
+	size_t i; for (i = 0; i < text.size(); i++) if (text[i] == '\n') break;
+	this -> fold_button -> set_position(i + deep*2 + 7, 0);
+	son.push_back(del_button);
 }
 
 
