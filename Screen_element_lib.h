@@ -138,6 +138,7 @@ void print(output_content output) {
 	} else {
 		screen_element_controller.set_mouse_position(output.position + COORD{output.deep, 0});
 	}
+	
 	screen_element_controller.set_color(output.color);
 	short cnt = 0;
 	for (size_t i = 0; i < output.text.size(); i++) {
@@ -328,7 +329,7 @@ Button root;
 
 void Button::set_text(string text) {
 	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\r')
-		text.erase(text.begin() + i, text.begin() + i), i--;
+		text.erase(text.begin() + i), i--;
 	this -> text = text;
 	if (auto_position) cal_height();
 }

@@ -13,11 +13,9 @@ string operator * (const string str, int k) {
 }
 
 const string welcome_text = "Welcome to use Program Checker.\n\n\
-   Feature:\n\
-\n\
-       Support storing multiple coding!\n\
-       Support automatic compilation!\n\
-\n\
+Feature:\n\n\
+Support storing multiple coding!\n\
+Support automatic compilation!\n\n\
 Created by hdsxwt.";
 
 Button home_button;
