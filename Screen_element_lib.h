@@ -130,6 +130,7 @@ struct output_content{ // print ------------------------------------------------
 	}
 };
 
+vector<Button*> delete_cache;
 vector<output_content> output_cache;
 vector<output_content> clear_cache;
 
@@ -168,6 +169,10 @@ void fresh_print() {
 	output_cache.clear();
 }
 
+void fresh_delete() {
+	// TODO
+}
+
 
 class Button { // Button -----------------------------------------------------------------------------------------------------------------
 private:
@@ -176,6 +181,7 @@ private:
 	// relation
 	Fold_button* fold_button;
 	Button* lst;
+	Button* nxt;
 	vector<Button*> son;
 	
 	// Color
@@ -204,7 +210,7 @@ private:
 	bool foldable;
 	
 	// delete
-	bool deletable; // TODO
+	bool deletable;
 	
 	// others
 	bool clickable;
@@ -220,6 +226,7 @@ public:
 		// realations
 		this -> fold_button = nullptr;
 		this -> lst = nullptr;
+		this -> nxt = nullptr;
 		this -> son.clear();
 		this -> fa = nullptr;
 		
@@ -252,6 +259,9 @@ public:
 		this -> folded = false;
 		this -> foldable = false;
 		this -> clickable = false;
+		
+		// delete
+		this -> deletable = false;
 	}
 	// relation
 	void add_son(Button* Button, bool typ = true);
@@ -286,6 +296,8 @@ public:
 	bool get_foldable  () { return foldable; }
 	bool get_folded    () { return folded; }
 	bool get_clickable () { return clickable; }
+	// del
+	void del();
 	// text
 	void set_text (string text);
 	void add_text (string text) { set_text(this -> text + text); }
@@ -298,6 +310,7 @@ public:
 	
 private:
 	void add_fold_button(Fold_button* fold_button);
+	void add_del_button(Del_button* del_button);
 	virtual void print(bool typ = true);
 	virtual Button* get_class_name() { return this; }
 	void cal_height();
@@ -341,6 +354,19 @@ public:
 
 Button root;
 
+void Button::del() {
+	for (auto button: son) {
+		button -> del();
+	}
+	for (size_t i = 0; i < fa -> son.size(); i++) if (fa -> son[i] == this) {
+		fa -> son.erase(son.begin() + i);
+		break;
+	}
+	if (lst != nullptr) lst -> nxt = nxt;
+	if (nxt != nullptr) nxt -> lst = lst;
+	delete_cache.push_back(this);
+}
+
 void Button::set_text(string text) {
 	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\r')
 		text.erase(text.begin() + i), i--;
@@ -354,10 +380,13 @@ void Button::cal_height() {
 		height++;
 }
 
-void Button::add_son(Button* Button, bool typ) {
-	if (!son.empty()) Button -> lst = son.back();
-	Button -> fa = this;
-	son.push_back(Button);
+void Button::add_son(Button* button, bool typ) {
+	if (!son.empty()) {
+		button -> lst = son.back();
+		son.back() -> nxt = button;
+	}
+	button -> fa = this;
+	son.push_back(button);
 }
 
 void Button::add_fold_button(Fold_button* fold_button) {
@@ -370,6 +399,11 @@ void Button::add_fold_button(Fold_button* fold_button) {
 	this -> fold_button -> set_position(i + deep*2 + 5, 0);
 	this -> fold_button -> reset();
 	son.push_back(fold_button);
+}
+
+
+void Button::add_del_button(Del_button* del_button) {
+	// TODO
 }
 
 
