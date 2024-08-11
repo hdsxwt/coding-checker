@@ -36,8 +36,8 @@ public:
 	void set_color(Color color);
 	void set_mouse_position (const short x, const short y);
 	void set_mouse_position (const COORD cursorPosition);
-	void Set_cursor_visible(bool visible);
-	void Set_console_mode(bool QuickEditMode, bool InsertMode, bool MouseInput);
+	void set_cursor_visible(bool visible);
+	void set_console_mode(bool QuickEditMode, bool InsertMode, bool MouseInput);
 	void memory_clear();
 	void start();
 	void stop();
@@ -613,14 +613,14 @@ void Screen_element_controller::set_mouse_position (const COORD cursorPosition) 
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cursorPosition);
 }
 
-void Screen_element_controller::Set_cursor_visible(bool visible) {
+void Screen_element_controller::set_cursor_visible(bool visible) {
 	CONSOLE_CURSOR_INFO CursorInfo;
 	GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &CursorInfo);
 	CursorInfo.bVisible = visible;
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &CursorInfo);
 }
 
-void Screen_element_controller::Set_console_mode(bool QuickEditMode, bool InsertMode, bool MouseInput) {
+void Screen_element_controller::set_console_mode(bool QuickEditMode, bool InsertMode, bool MouseInput) {
 	DWORD mode;
 	GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &mode);
 	if (QuickEditMode) {
@@ -642,8 +642,8 @@ void Screen_element_controller::Set_console_mode(bool QuickEditMode, bool Insert
 }
 
 void Screen_element_controller::start() {
-	Set_cursor_visible(false);
-	Set_console_mode(false, false, true);
+	set_cursor_visible(false);
+	set_console_mode(false, false, true);
 	FlushConsoleInputBuffer(GetStdHandle(STD_OUTPUT_HANDLE));
 	FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 	set_color(default_color);
@@ -653,17 +653,11 @@ void Screen_element_controller::start() {
 }
 
 void Screen_element_controller::stop() {
-	Set_cursor_visible(true);
-	Set_console_mode(true, true, true);
-	memory_clear();
+	set_cursor_visible(true);
+	set_console_mode(true, true, true);
+	root.del();
 }
 
-void Screen_element_controller::memory_clear() {
-	auto dfs = [&] (Button* button, auto dfs) -> void {
-		for (Button* v: button -> son) dfs(v, dfs);
-	};
-	dfs(&root, dfs);
-}
 
 void debug_output(string text) {
 	MessageBox(NULL, text.data(), 0, 0);

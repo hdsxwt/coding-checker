@@ -119,8 +119,6 @@ int main() {
 	}
 	show_welcome();
 	while (1) {
-		screen_element_controller.set_mouse_position(0,0);
-		cout << menu.son.size() << endl; // TODO
 		Call_back callback = root.update();
 		for (auto x: callback.ids) {
 			if (x.id == 1) {
@@ -131,7 +129,7 @@ int main() {
 				ShellExecute(NULL, "open", "https://github.com/hdsxwt", NULL, NULL, SW_SHOWNORMAL);
 			} else if (x.id == 10) {
 				screen_element_controller.set_mouse_position(3, 28);
-				printf("Please enter the name of the task: ");
+				printf("Please enter the name of the task: |");
 				string s;
 				cin >> s;
 				screen_element_controller.set_mouse_position(3, 28);
