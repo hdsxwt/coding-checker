@@ -255,7 +255,6 @@ public:
 		string command = "del \"" + path + "\" /Q";
 		system(command.data());
 		RemoveDirectory(path.data());
-		delete this;
 	}
 	
 	void open_files() {
@@ -343,6 +342,7 @@ public:
 private:
 	void del(int p) {
 		checkers[p] -> remove();
+		delete checkers[p];
 		siz--;
 		checkers.erase(checkers.begin() + p);
 	}

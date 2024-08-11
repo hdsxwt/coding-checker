@@ -120,7 +120,7 @@ int main() {
 	show_welcome();
 	while (1) {
 		Call_back callback = root.update();
-		for (auto x: callback.ids) {
+		for (Cal_back_content x: callback.ids) {
 			if (x.id == 1) {
 				show_welcome();
 			} else if (x.id == 3) {
@@ -134,14 +134,18 @@ int main() {
 				cin >> s;
 				screen_element_controller.set_mouse_position(3, 28);
 				for (int i = 1; i <= 100; i++) putchar(' ');
+				checker_controller.add_new_task(s);
+				
 				Button* button = new Button();
 				button -> set_text(s);
-				button -> set_id(hsh(s));
+				button -> set_id(checker_controller.checkers.back() -> get_id());
 				button -> set_visible(true);
 				button -> set_clickable(true);
 				button -> set_deletable(true);
 				menu.add_son(button);
-				checker_controller.add_new_task(s);
+			} else if (x.typ == CALL_BACK_CONTENG_DELETE) {
+				checker_controller.del_task(x.id);
+				screen_element_controller.start();
 			}
 		}
 	}

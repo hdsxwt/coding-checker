@@ -579,6 +579,7 @@ Call_back Del_button::update(bool is_root) { // update -------------------------
 		if (ret == IDOK) {
 			fa -> del();
 			call_back.ids[0].typ = CALL_BACK_CONTENG_DELETE;
+			call_back.ids[0].id = fa -> get_id();
 			return call_back;
 		}
 	}
