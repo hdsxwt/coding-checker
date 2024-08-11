@@ -645,6 +645,7 @@ void Screen_element_controller::start() {
 void Screen_element_controller::stop() {
 	Set_cursor_visible(true);
 	Set_console_mode(true, true, true);
+	memory_clear();
 }
 
 void Screen_element_controller::memory_clear() {

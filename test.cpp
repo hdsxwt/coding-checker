@@ -4,6 +4,10 @@ using namespace std;
 #include"Screen_element_lib.h"
 
 
+Button ext;
+
+void stop();
+
 int main() {
 	Button button1;
 	button1.set_visible(true);
@@ -18,10 +22,28 @@ int main() {
 	root.add_son(&button1);
 	root.add_son(&button2);
 	
+	ext.set_visible(true);
+	ext.set_clickable(true);
+	ext.set_id(3);
+	ext.set_text("Exit");
+	ext.set_normal_color(Color(RED, BLACK));
+	ext.set_highlight_color(Color(BRIGHTWHITE, BRIGHTRED));
+	ext.set_click_color(Color(RED, BLACK));
+	root.add_son(&ext);
+	
 	screen_element_controller.start();
 	while (1) {
 		Call_back call_back = root.update();
+		if (!call_back.empty()) {
+			if (call_back[0].id == 3) {
+				stop();
+			}
+		}
 	}
 }
 
-
+void stop() {
+	screen_element_controller.set_mouse_position(0,23);
+	screen_element_controller.stop();
+	exit(0);
+}
