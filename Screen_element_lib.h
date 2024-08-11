@@ -357,6 +357,11 @@ public:
 
 class Del_button : public Button {
 public:
+	Del_button () {
+		this -> text = "[del]";
+		this -> height = 0;
+		this -> id = ++psz;
+	}
 	virtual Call_back update(bool is_root);
 	virtual Del_button* get_class_name() { return this; }
 };
@@ -403,7 +408,6 @@ void Button::add_fold_button(Fold_button* fold_button) {
 	this -> fold_button -> set_fa(this);
 	this -> fold_button -> set_clickable(true);
 	this -> fold_button -> set_visible(true);
-	this -> fold_button -> set_auto_position(false);
 	size_t i; for (i = 0; i < text.size(); i++) if (text[i] == '\n') break;
 	this -> fold_button -> set_position(i + deep*2 + 5, 0);
 	this -> fold_button -> reset();
@@ -416,9 +420,8 @@ void Button::add_del_button(Del_button* del_button) {
 	this -> del_button -> set_fa(this);
 	this -> del_button -> set_clickable(true);
 	this -> del_button -> set_visible(true);
-	this -> del_button -> set_auto_position(false);
 	size_t i; for (i = 0; i < text.size(); i++) if (text[i] == '\n') break;
-	this -> fold_button -> set_position(i + deep*2 + 7, 0);
+	this -> del_button -> set_position(i + deep*2 + 7, 0);
 	son.push_back(del_button);
 }
 
@@ -445,7 +448,9 @@ void Button::print(bool typ) { // print ----------------------------------------
 }
 
 Call_back Button::update(bool is_root) { // update -----------------------------------------------------------------------------------------------
-	if (auto_position) {
+	
+	
+	if (auto_position) { // set position
 		if (lst != nullptr) {
 			position.Y = (lst -> height + lst -> position.Y + 1);
 		} else if (fa != nullptr) {
@@ -455,10 +460,11 @@ Call_back Button::update(bool is_root) { // update -----------------------------
 		}
 	}
 	
-	if (fa != nullptr) {
+	if (fa != nullptr) { // set_global_position and set_visible
 		global_position = position + fa -> global_position;
 		real_visible = (visible) && (fa -> real_visible) &&
-				(!(fa -> folded) || typeid(*(this -> get_class_name())) == typeid(Fold_button));
+				(!(fa -> folded) || typeid(*(this -> get_class_name())) == typeid(Fold_button) ||
+				typeid(*(this -> get_class_name())) == typeid(Del_button));
 		if (typeid(*(this -> get_class_name())) == typeid(Button))
 			this -> deep = fa -> deep + 1;
 		else
@@ -556,17 +562,19 @@ Call_back Fold_button::update(bool is_root) { // update ------------------------
 
 Call_back Del_button::update(bool is_root) { // update ------------------------------------------------------------------------------------------------
 	Call_back call_back = this -> Button::update(false);
-	
 	if (!call_back.empty()) {
 		int ret = MessageBox(NULL, "Do you really want to DELETE the tasks?", "Warning", MB_OKCANCEL|MB_ICONWARNING);
 		if (ret == IDOK) {
-//			fa -> del();
+//			fa -> del(); // new function tested TODO
 			call_back.ids[0].typ = CALL_BACK_CONTENG_DELETE;
 			return call_back;
 		}
 	}
 	return Call_back();
 }
+
+
+// Console command
 
 bool Screen_element_controller::get_mouse_event() {
 	INPUT_RECORD record;
@@ -637,7 +645,6 @@ void Screen_element_controller::stop() {
 	Set_console_mode(true, true, true);
 }
 
-// Console command
 
 #endif
 
