@@ -38,6 +38,7 @@ public:
 	void set_mouse_position (const COORD cursorPosition);
 	void Set_cursor_visible(bool visible);
 	void Set_console_mode(bool QuickEditMode, bool InsertMode, bool MouseInput);
+	void memory_clear();
 	void start();
 	void stop();
 }screen_element_controller;
@@ -179,8 +180,9 @@ private:
 	Del_button* del_button;
 	Button* lst;
 	Button* nxt;
+public:
 	vector<Button*> son;
-	
+private:
 	// Color
 	Color last_color;
 	Color recent_color;
@@ -643,6 +645,13 @@ void Screen_element_controller::start() {
 void Screen_element_controller::stop() {
 	Set_cursor_visible(true);
 	Set_console_mode(true, true, true);
+}
+
+void Screen_element_controller::memory_clear() {
+	auto dfs = [&] (Button* button, auto dfs) -> void{
+		for (Button* v: button -> son) dfs(v, dfs);
+	};
+	dfs(&root, dfs);
 }
 
 
