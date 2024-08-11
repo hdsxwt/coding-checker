@@ -371,15 +371,22 @@ public:
 Button root;
 
 void Button::del() {
+	// clear output
+	string s(text.size(), ' ');
+	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n') s[i] = '\n';
+	clear_cache.push_back(output_content(default_color, global_position , deep*2, false, indent_line, s));
+	
+	
 	for (auto button: son) {
 		button -> del();
 	}
 	for (size_t i = 0; i < fa -> son.size(); i++) if (fa -> son[i] == this) {
-		fa -> son.erase(son.begin() + i);
+		fa -> son.erase(fa -> son.begin() + i);
 		break;
 	}
 	if (lst != nullptr) lst -> nxt = nxt;
 	if (nxt != nullptr) nxt -> lst = lst;
+	
 	delete_cache.push_back(this);
 }
 
@@ -432,7 +439,7 @@ void Button::print(bool typ) { // print ----------------------------------------
 	// clear old
 	if (global_position != last_global_position || last_text != text) { 
 		string s(last_text.size(), ' ');
-		for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n') s[i] = '\n';
+		for (size_t i = 0; i < last_text.size(); i++) if (last_text[i] == '\n') s[i] = '\n';
 		clear_cache.push_back(output_content(default_color, last_global_position , deep*2, false, indent_line, s));
 		last_global_position = global_position;
 		last_text = text;
@@ -495,7 +502,7 @@ Call_back Button::update(bool is_root) { // update -----------------------------
 	if ( mouse_on_button() && real_visible && clickable) {
 		recent_color = highlight_color;
 		if (recent_mouse_event.dwButtonState && recent_mouse_event.dwButtonState != MOUSE_WHEELED && !pressed) {
-			recent_color = click_color;
+			if (typeid(*(this -> get_class_name())) != typeid(Del_button)) recent_color = click_color;
 			pressed = true;
 			ret.push_back(id);
 		} else if (!recent_mouse_event.dwButtonState) {
@@ -567,7 +574,7 @@ Call_back Del_button::update(bool is_root) { // update -------------------------
 	if (!call_back.empty()) {
 		int ret = MessageBox(GetActiveWindow(), "Do you really want to DELETE the tasks?", "Warning", MB_OKCANCEL|MB_ICONWARNING);
 		if (ret == IDOK) {
-//			fa -> del(); // new function tested TODO
+			fa -> del();
 			call_back.ids[0].typ = CALL_BACK_CONTENG_DELETE;
 			return call_back;
 		}
@@ -653,6 +660,10 @@ void Screen_element_controller::memory_clear() {
 		for (Button* v: button -> son) dfs(v, dfs);
 	};
 	dfs(&root, dfs);
+}
+
+void debug_output(string text) {
+	MessageBox(NULL, text.data(), 0, 0);
 }
 
 
