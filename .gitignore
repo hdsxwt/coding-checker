@@ -1,11 +1,2 @@
-task
-menu.hpp.gch
-Program_Checker.exe
-Program_Checker_Plus.exe
-Screem_element_lib.h.gch
-imgui
-test.exe
-start.bat
-del.bat
-test.json
 coding_checker
+*.exe

@@ -380,7 +380,7 @@ void Button::del() {
 	for (auto button: son) {
 		button -> del();
 	}
-	for (size_t i = 0; i < fa -> son.size(); i++) if (fa -> son[i] == this) {
+	if (fa != nullptr) for (size_t i = 0; i < fa -> son.size(); i++) if (fa -> son[i] == this) {
 		fa -> son.erase(fa -> son.begin() + i);
 		break;
 	}
@@ -656,7 +656,7 @@ void Screen_element_controller::stop() {
 }
 
 void Screen_element_controller::memory_clear() {
-	auto dfs = [&] (Button* button, auto dfs) -> void{
+	auto dfs = [&] (Button* button, auto dfs) -> void {
 		for (Button* v: button -> son) dfs(v, dfs);
 	};
 	dfs(&root, dfs);
