@@ -423,7 +423,7 @@ void Button::add_del_button(Del_button* del_button) {
 	this -> del_button -> set_clickable(true);
 	this -> del_button -> set_visible(true);
 	size_t i; for (i = 0; i < text.size(); i++) if (text[i] == '\n') break;
-	this -> del_button -> set_position(i + deep*2 + 7, 0);
+	this -> del_button -> set_position(i + deep*2 + 9, 0);
 	son.push_back(del_button);
 }
 
