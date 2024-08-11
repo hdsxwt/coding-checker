@@ -405,8 +405,12 @@ void Button::cal_height() {
 
 void Button::add_son(Button* button) {
 	if (!son.empty()) {
-		button -> lst = son.back();
-		son.back() -> nxt = button;
+		for (size_t i = son.size() - 1; i >= 0; i--)
+			if (typeid(*(son[i] -> get_class_name())) == typeid(Button)) {
+				button -> lst = son[i];
+				son[i] -> nxt = button;
+				break;
+			}
 	}
 	button -> fa = this;
 	son.push_back(button);
@@ -457,8 +461,7 @@ void Button::print(bool typ) { // print ----------------------------------------
 }
 
 Call_back Button::update(bool is_root) { // update -----------------------------------------------------------------------------------------------
-	
-	
+
 	if (auto_position) { // set position
 		if (lst != nullptr) {
 			position.Y = (lst -> height + lst -> position.Y + 1);
@@ -665,7 +668,6 @@ void Screen_element_controller::memory_clear() {
 void debug_output(string text) {
 	MessageBox(NULL, text.data(), 0, 0);
 }
-
 
 #endif
 

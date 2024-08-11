@@ -107,8 +107,20 @@ int main() {
 	
 	checker_controller.start();
 	screen_element_controller.start();
+	for (auto p: checker_controller.checkers) {
+		string s = p -> get_name();
+		Button* button = new Button();
+		button -> set_text(s);
+		button -> set_id(hsh(s));
+		button -> set_visible(true);
+		button -> set_clickable(true);
+		button -> set_deletable(true);
+		menu.add_son(button);
+	}
 	show_welcome();
 	while (1) {
+		screen_element_controller.set_mouse_position(0,0);
+		cout << menu.son.size() << endl; // TODO
 		Call_back callback = root.update();
 		for (auto x: callback.ids) {
 			if (x.id == 1) {
@@ -117,6 +129,21 @@ int main() {
 				stop();
 			} else if (x.id == 102) {
 				ShellExecute(NULL, "open", "https://github.com/hdsxwt", NULL, NULL, SW_SHOWNORMAL);
+			} else if (x.id == 10) {
+				screen_element_controller.set_mouse_position(3, 28);
+				printf("Please enter the name of the task: ");
+				string s;
+				cin >> s;
+				screen_element_controller.set_mouse_position(3, 28);
+				for (int i = 1; i <= 100; i++) putchar(' ');
+				Button* button = new Button();
+				button -> set_text(s);
+				button -> set_id(hsh(s));
+				button -> set_visible(true);
+				button -> set_clickable(true);
+				button -> set_deletable(true);
+				menu.add_son(button);
+				checker_controller.add_new_task(s);
 			}
 		}
 	}

@@ -347,7 +347,7 @@ private:
 		checkers.erase(checkers.begin() + p);
 	}
 public:
-	void del_task (string name) { // TODO
+	void del_task (string name) {
 		for (size_t i = 0; i < siz; i++) {
 			if (checkers[i] -> get_name() == name) {
 				del(i);

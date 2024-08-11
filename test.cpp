@@ -6,15 +6,24 @@ using namespace std;
 
 Button ext;
 
-const int maxn = 1000000;
-
 void stop();
 
 int main() {
-}
-
-void stop() {
-	screen_element_controller.set_mouse_position(0,23);
+	screen_element_controller.start();
+	Button button1;
+	button1.set_visible(true);
+	button1.set_text("button1");
+	button1.set_id(1);
+	Button button2;
+	button2.set_visible(true);
+	button2.set_text("button2");
+	button2.set_id(1);
+	root.update();
+	root.add_son(&button1);
+	root.update();
+	root.add_son(&button2);
+	while (1) {
+		root.update();
+	}
 	screen_element_controller.stop();
-	exit(0);
 }
