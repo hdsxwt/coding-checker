@@ -563,7 +563,7 @@ Call_back Fold_button::update(bool is_root) { // update ------------------------
 Call_back Del_button::update(bool is_root) { // update ------------------------------------------------------------------------------------------------
 	Call_back call_back = this -> Button::update(false);
 	if (!call_back.empty()) {
-		int ret = MessageBox(NULL, "Do you really want to DELETE the tasks?", "Warning", MB_OKCANCEL|MB_ICONWARNING);
+		int ret = MessageBox(GetActiveWindow(), "Do you really want to DELETE the tasks?", "Warning", MB_OKCANCEL|MB_ICONWARNING);
 		if (ret == IDOK) {
 //			fa -> del(); // new function tested TODO
 			call_back.ids[0].typ = CALL_BACK_CONTENG_DELETE;
