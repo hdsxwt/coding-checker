@@ -28,6 +28,15 @@ Button welcome;
 Button welcome_shown_text;
 Button welcome_author;
 Button control;
+Button control_name;
+Button control_start;
+Button control_compile;
+Button control_compile_data_generator;
+Button control_compile_answwer_generator;
+Button control_compile_tested_program;
+Button control_bottom;
+
+Checker* now_checker = nullptr;
 
 Button add_tk;
 
@@ -93,6 +102,9 @@ int main() {
 	welcome.set_id(100);
 	welcome.set_position(35, 0);
 	root.add_son(&welcome);
+	control.set_id(200);
+	control.set_position(35, 0);
+	root.add_son(&control);
 	
 	welcome_shown_text.set_id(101);
 	welcome_shown_text.set_visible(true);
@@ -104,6 +116,21 @@ int main() {
 	welcome_author.set_clickable(true);
 	welcome_author.set_text("Github: hdsxwt");
 	welcome.add_son(&welcome_author);
+	
+	control_name.set_id(201);
+	control_name.set_visible(true);
+	control_name.set_normal_color(default_highlight_color);
+	control.add_son(&control_name);
+	
+	control_start.set_id(202);
+	control_start.set_text("\n start \n");
+	control_start.set_visible(true);
+	control_start.set_clickable(true);
+	control_start.set_normal_color(Color(WHITE, GREEN));
+	control_start.set_highlight_color(Color(BRIGHTWHITE, BRIGHTGREEN));
+	control_start.set_click_color(Color(WHITE, GREEN));
+	control.add_son(&control_start);
+	
 	
 	checker_controller.start();
 	screen_element_controller.start();
@@ -131,13 +158,13 @@ int main() {
 				screen_element_controller.set_mouse_position(3, 28);
 				printf("Please enter the name of the task: |");
 				string s;
-				cin >> s;
+				getline(cin, s);
 				screen_element_controller.set_mouse_position(3, 28);
 				for (int i = 1; i <= 100; i++) putchar(' ');
 				checker_controller.add_new_task(s);
 				
 				Button* button = new Button();
-				button -> set_text(s);
+				button -> set_text(checker_controller.checkers.back() -> get_name());
 				button -> set_id(checker_controller.checkers.back() -> get_id());
 				button -> set_visible(true);
 				button -> set_clickable(true);
@@ -146,6 +173,13 @@ int main() {
 			} else if (x.typ == CALL_BACK_CONTENG_DELETE) {
 				checker_controller.del_task(x.id);
 				screen_element_controller.start();
+			} else {
+				show_control();
+				for (Checker* checker: checker_controller.checkers) if (checker -> get_id() == x.id) {
+					now_checker = checker;
+					break;
+				}
+				control_name.set_text(now_checker -> get_name());
 			}
 		}
 	}

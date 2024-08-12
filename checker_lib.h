@@ -267,7 +267,7 @@ class Checker_controller {
 private:
 	bool illegal (char c) {
 		return c == '\\' || c == '/' || c == ':' || c == '*' || c == '?' || c == '\"' || c == '!' ||
-		c == '<' || c == '>' || c == '|';
+		c == '<' || c == '>' || c == '|' || c == ' ';
 	}
 public:
 	size_t siz;
