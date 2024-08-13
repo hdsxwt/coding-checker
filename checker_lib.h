@@ -14,7 +14,7 @@ using std::istringstream;
 using nlohmann::json;
 
 const string tested_program = "tested_program";
-const string data_generater = "data_generater";
+const string data_generator = "data_generator";
 const string answer_generator = "answer_generator";
 const string HOME = ".\\coding_checker\\";
 
@@ -73,6 +73,9 @@ public:
 	short get_siz   () { return siz; }
 	string get_path () { return path; }
 	string get_name () { return name; }
+	bool get_vis_tested () { return vis_tested; }
+	bool get_vis_ans    () { return vis_ans; }
+	bool get_vis_data   () { return vis_data; }
 private:
 	void cpy() {
 		if (!directory_exists(path + "task\\")) {
@@ -213,11 +216,9 @@ public:
 		string command = "g++ \"" + path + file + ".cpp\" -o \"" + path + file + ".exe\" -std=c++14 -Wall -O2 " +
 				"> \"" + path + "compile.txt\" 2>&1";
 		bool ret = (system(command.data()) == 0);
-		if (ret) {
-			if (file == tested_program) vis_tested =  true;
-			if (file == data_generater) vis_data =  true;
-			if (file == answer_generator) vis_ans =  true;
-		}
+		if (file == tested_program) vis_tested = ret;
+		if (file == data_generator) vis_data = ret;
+		if (file == answer_generator) vis_ans = ret;
 		return ret;
 	}
 	void edit_file(string file) {
@@ -225,7 +226,7 @@ public:
 		system(command.data());
 	}
 	bool check() {
-		generate_data(data_generater);
+		generate_data(data_generator);
 		generate_answer(answer_generator);
 		running(tested_program);
 		bool ret;
