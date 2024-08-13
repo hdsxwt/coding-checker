@@ -67,8 +67,28 @@ void add_new_task();
 
 void stop();
 
+void add_check(Button &generator, Button &company, int a, int b, string s) {
+	generator.set_id(204); // TODO
+	generator.set_text(s);
+	generator.set_visible(true);
+	generator.set_clickable(true);
+	control_compile.add_son(&generator);
+	
+	company.set_id(205); // TODO
+	company.set_text("compile");
+	company.set_visible(true);
+	company.set_clickable(true);
+	company.set_normal_color(Color(RED, BLACK));
+	company.set_highlight_color(Color(BRIGHTRED, BLACK));
+	company.set_click_color(Color(BRIGHTWHITE, BLACK));
+	company.set_position(20, 0);
+	company.set_height(0);
+	generator.add_son(&company);
+}
+
 
 int main() {
+	
 	{ // home_button -> root
 		
 		home_button.set_visible(true);
@@ -164,49 +184,13 @@ int main() {
 		control.add_son(&control_compile);
 	}
 	{ // data_generator -> control_compile
-		control_compile_data_generator.set_id(204); // TODO
-		control_compile_data_generator.set_text("Edit data generator");
-		control_compile_data_generator.set_visible(true);
-		control_compile_data_generator.set_clickable(true);
-		control_compile.add_son(&control_compile_data_generator);
-		
-		control_compile_data_generator_company.set_id(205);
-		control_compile_data_generator_company.set_text("unready");
-		control_compile_data_generator_company.set_visible(true);
-		control_compile_data_generator_company.set_normal_color(Color(BRIGHTRED, BLACK));
-		control_compile_data_generator_company.set_position(20, 0);
-		control_compile_data_generator_company.set_height(0);
-		control_compile_data_generator.add_son(&control_compile_data_generator_company);
+		add_check(control_compile_data_generator, control_compile_data_generator_company, 204, 205, "Edit data generator");
 	}
 	{ // answer_generator -> control_compile
-		control_compile_answer_generator.set_id(206); // TODO
-		control_compile_answer_generator.set_text("Edit answer generator");
-		control_compile_answer_generator.set_visible(true);
-		control_compile_answer_generator.set_clickable(true);
-		control_compile.add_son(&control_compile_answer_generator);
-		
-		control_compile_answer_generator_company.set_id(207);
-		control_compile_answer_generator_company.set_text("unready");
-		control_compile_answer_generator_company.set_visible(true);
-		control_compile_answer_generator_company.set_normal_color(Color(BRIGHTRED, BLACK));
-		control_compile_answer_generator_company.set_position(20, 0);
-		control_compile_answer_generator_company.set_height(0);
-		control_compile_answer_generator.add_son(&control_compile_answer_generator_company);
+		add_check(control_compile_answer_generator, control_compile_answer_generator_company, 206, 207, "Edit answer generator");
 	}
 	{ // tested_program -> control_compile
-		control_compile_tested_program.set_id(208); // TODO
-		control_compile_tested_program.set_text("Edit tested program");
-		control_compile_tested_program.set_visible(true);
-		control_compile_tested_program.set_clickable(true);
-		control_compile.add_son(&control_compile_tested_program);
-		
-		control_compile_tested_program_company.set_id(209);
-		control_compile_tested_program_company.set_text("unready");
-		control_compile_tested_program_company.set_visible(true);
-		control_compile_tested_program_company.set_normal_color(Color(BRIGHTRED, BLACK));
-		control_compile_tested_program_company.set_position(20, 0);
-		control_compile_tested_program_company.set_height(0);
-		control_compile_tested_program.add_son(&control_compile_tested_program_company);
+		add_check(control_compile_tested_program, control_compile_tested_program_company, 208, 209, "Edit tested program");
 	}
 	
 	
@@ -269,8 +253,8 @@ void add_new_task() {
 	getline(cin, s);
 	screen_element_controller.set_mouse_position(3, 28);
 	for (int i = 1; i <= 100; i++) putchar(' ');
+	if (s == "") return;
 	checker_controller.add_new_task(s);
-	
 	Button* button = new Button();
 	button -> set_text(checker_controller.checkers.back() -> get_name());
 	button -> set_id(checker_controller.checkers.back() -> get_id());

@@ -324,7 +324,7 @@ public:
 	void stop() {
 		write();
 	}
-	bool add_new_task (string name) {
+	bool add_new_task(string name) {
 		Checker* checker = new Checker();
 		checkers.push_back(checker);
 		for (size_t i = 0; i < name.size(); i++) {
