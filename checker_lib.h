@@ -219,6 +219,7 @@ public:
 		if (file == tested_program) vis_tested = ret;
 		if (file == data_generator) vis_data = ret;
 		if (file == answer_generator) vis_ans = ret;
+		write();
 		return ret;
 	}
 	void edit_file(string file) {

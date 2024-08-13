@@ -30,6 +30,7 @@ Button welcome_author;
 Button control;
 Button control_name;
 Button control_start; // TODO
+Button control_stop; // TODO
 Button control_siz;
 Button control_compile;
 Button control_compile_data_generator;
@@ -38,7 +39,7 @@ Button control_compile_tested_program;
 Button control_compile_data_generator_company;
 Button control_compile_answer_generator_company;
 Button control_compile_tested_program_company;
-Button control_information; // TODO
+Button control_information;
 
 Checker* now_checker = nullptr;
 
@@ -81,7 +82,7 @@ void add_new_task() {
 }
 
 
-void add_check(Button &generator, Button &company, int a, int b, string s) {
+void add_generator(Button &generator, Button &company, int a, int b, string s) {
 	generator.set_id(a);
 	generator.set_text(s);
 	generator.set_visible(true);
@@ -100,6 +101,23 @@ void add_check(Button &generator, Button &company, int a, int b, string s) {
 	generator.add_son(&company);
 }
 
+void update_vis() {
+	auto f = [&] (Button &company, bool p) -> void {
+		if (p) {
+			company.set_normal_color(Color(GREEN, BLACK));
+			company.set_highlight_color(Color(BRIGHTGREEN, BLACK));
+			company.set_click_color(Color(BRIGHTWHITE, BLACK));
+		} else {
+			company.set_normal_color(Color(RED, BLACK));
+			company.set_highlight_color(Color(BRIGHTRED, BLACK));
+			company.set_click_color(Color(BRIGHTWHITE, BLACK));
+		}
+	};
+	f(control_compile_data_generator_company, now_checker -> get_vis_data());
+	f(control_compile_answer_generator_company, now_checker -> get_vis_ans());
+	f(control_compile_tested_program_company, now_checker -> get_vis_tested());
+}
+
 void compile(string file) {
 	bool ret = now_checker -> compile_file(file);
 	if (ret) {
@@ -110,6 +128,7 @@ void compile(string file) {
 		string file_content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 		control_information.set_text(file_content);
 	}
+	update_vis();
 	screen_element_controller.start();
 }
 
@@ -215,6 +234,16 @@ int main() {
 		control.add_son(&control_start);
 	}
 	
+	{ // control_stop(212) -> control
+		control_stop.set_id(212);
+		control_stop.set_text("\n stop \n");
+		control_stop.set_visible(true);
+		control_stop.set_position(10,0);
+		control_stop.set_height(0);
+		control_stop.set_normal_color(Color(WHITE, BRIGHTBLACK));
+		control_start.add_son(&control_stop);
+	}
+	
 	{ // control_siz(210) -> control
 		control_siz.set_id(210);
 		control_siz.set_visible(true);
@@ -229,21 +258,22 @@ int main() {
 	}
 	
 	{ // data_generator(204,205) -> control_compile
-		add_check(control_compile_data_generator, control_compile_data_generator_company, 204, 205, "Edit data generator");
+		add_generator(control_compile_data_generator, control_compile_data_generator_company, 204, 205, "Edit data generator");
 	}
 	
 	{ // answer_generator(206,207) -> control_compile
-		add_check(control_compile_answer_generator, control_compile_answer_generator_company, 206, 207, "Edit answer generator");
+		add_generator(control_compile_answer_generator, control_compile_answer_generator_company, 206, 207, "Edit answer generator");
 	}
 	
 	{ // tested_program(208,209) -> control_compile
-		add_check(control_compile_tested_program, control_compile_tested_program_company, 208, 209, "Edit tested program");
+		add_generator(control_compile_tested_program, control_compile_tested_program_company, 208, 209, "Edit tested program");
 	}
 	
 	{ // control_information(211) -> control
 		control_information.set_id(211);
 		control_information.set_visible(true);
 		control_information.set_position(0, 11);
+		control_information.set_max_length(70);
 		control_information.set_text("information");
 		control.add_son(&control_information);
 	}
@@ -280,7 +310,7 @@ int main() {
 				}
 				screen_element_controller.start();
 			} else if (x.id == 204) {
-				now_checker -> edit_file(data_generater);
+				now_checker -> edit_file(data_generator);
 				screen_element_controller.start();
 			} else if (x.id == 206) {
 				now_checker -> edit_file(answer_generator);
@@ -289,7 +319,7 @@ int main() {
 				now_checker -> edit_file(tested_program);
 				screen_element_controller.start();
 			} else if (x.id == 205) {
-				compile(data_generater);
+				compile(data_generator);
 			} else if (x.id == 207) {
 				compile(answer_generator);
 			} else if (x.id == 209) {
@@ -302,6 +332,7 @@ int main() {
 				}
 				control_name.set_text(now_checker -> get_name());
 				control_siz.set_text("checked task: " + to_string(now_checker -> get_siz()));
+				update_vis();
 			}
 		}
 	}
