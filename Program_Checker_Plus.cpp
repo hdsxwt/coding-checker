@@ -103,9 +103,12 @@ void add_check(Button &generator, Button &company, int a, int b, string s) {
 void compile(string file) {
 	bool ret = now_checker -> compile_file(file);
 	if (ret) {
-		
+		control_information.set_text("successful!");
 	} else {
-		
+		string s = now_checker -> get_path() + "compile.txt";
+		ifstream in(s);
+		string file_content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+		control_information.set_text(file_content);
 	}
 	screen_element_controller.start();
 }
@@ -240,7 +243,8 @@ int main() {
 	{ // control_information(211) -> control
 		control_information.set_id(211);
 		control_information.set_visible(true);
-		control_information.set_position(0, 20);
+		control_information.set_position(0, 11);
+		control_information.set_text("information");
 		control.add_son(&control_information);
 	}
 	
