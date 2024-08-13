@@ -29,17 +29,16 @@ Button welcome_shown_text;
 Button welcome_author;
 Button control;
 Button control_name;
-Button control_start;
-Button control_compile; 
-Button control_compile_data_generator; //
-Button control_compile_answer_generator; //
-Button control_compile_tested_program; //
-Button control_compile_data_generator_company; //
-Button control_compile_answer_generator_company; //
-Button control_compile_tested_program_company; //
-Button control_compile_siz; //
-Button control_compile_open_file; //
-Button control_information;
+Button control_start; // TODO
+Button control_siz;
+Button control_compile;
+Button control_compile_data_generator;
+Button control_compile_answer_generator;
+Button control_compile_tested_program;
+Button control_compile_data_generator_company;
+Button control_compile_answer_generator_company;
+Button control_compile_tested_program_company;
+Button control_information; // TODO
 
 Checker* now_checker = nullptr;
 
@@ -63,18 +62,33 @@ void show_control() {
 	control.set_visible(true);
 }
 
-void add_new_task();
+void add_new_task() {
+	screen_element_controller.set_mouse_position(3, 28);
+	printf("Please enter the name of the task: |");
+	string s;
+	getline(cin, s);
+	screen_element_controller.set_mouse_position(3, 28);
+	for (int i = 1; i <= 100; i++) putchar(' ');
+	if (s == "") return;
+	checker_controller.add_new_task(s);
+	Button* button = new Button();
+	button -> set_text(checker_controller.checkers.back() -> get_name());
+	button -> set_id(checker_controller.checkers.back() -> get_id());
+	button -> set_visible(true);
+	button -> set_clickable(true);
+	button -> set_deletable(true);
+	menu.add_son(button);
+}
 
-void stop();
 
 void add_check(Button &generator, Button &company, int a, int b, string s) {
-	generator.set_id(204); // TODO
+	generator.set_id(a);
 	generator.set_text(s);
 	generator.set_visible(true);
 	generator.set_clickable(true);
 	control_compile.add_son(&generator);
 	
-	company.set_id(205); // TODO
+	company.set_id(b);
 	company.set_text("compile");
 	company.set_visible(true);
 	company.set_clickable(true);
@@ -86,6 +100,17 @@ void add_check(Button &generator, Button &company, int a, int b, string s) {
 	generator.add_son(&company);
 }
 
+void compile(string file) {
+	bool ret = now_checker -> compile_file(file);
+	if (ret) {
+		
+	} else {
+		
+	}
+	screen_element_controller.start();
+}
+
+void stop();
 
 int main() {
 	
@@ -97,6 +122,7 @@ int main() {
 		home_button.set_text("Home");
 		root.add_son(&home_button);
 	}
+	
 	{ // menu -> root
 		
 		menu.set_visible(true);
@@ -106,6 +132,7 @@ int main() {
 		menu.set_text("Tested Programme Menu");
 		root.add_son(&menu);
 	}
+	
 	{ // add_tk -> menu
 		
 		add_tk.set_text("Add new task +");
@@ -114,6 +141,7 @@ int main() {
 		add_tk.set_id(10);
 		menu.add_son(&add_tk);
 	}
+	
 	{ // ext -> root
 		
 		ext.set_visible(true);
@@ -125,6 +153,7 @@ int main() {
 		ext.set_click_color(Color(RED, BLACK));
 		root.add_son(&ext);
 	}
+	
 	{ // seperate_line -> root
 		
 		string line = "|\n";
@@ -135,6 +164,7 @@ int main() {
 		seperate_line.set_id(50);
 		root.add_son(&seperate_line);
 	}
+	
 	{ // welcome & control -> root
 		
 		welcome.set_id(100);
@@ -144,6 +174,7 @@ int main() {
 		control.set_position(35, 0);
 		root.add_son(&control);
 	}
+	
 	{ // welcome_shown_text -> welcome
 		
 		welcome_shown_text.set_id(101);
@@ -151,6 +182,7 @@ int main() {
 		welcome_shown_text.set_text(welcome_text);
 		welcome.add_son(&welcome_shown_text);
 	}
+	
 	{ // welcome_author -> welcome
 		
 		welcome_author.set_id(102);
@@ -159,6 +191,7 @@ int main() {
 		welcome_author.set_text("Github: hdsxwt");
 		welcome.add_son(&welcome_author);
 	}
+	
 	{ // control_name -> control
 		
 		control_name.set_id(201);
@@ -166,9 +199,10 @@ int main() {
 		control_name.set_normal_color(default_highlight_color);
 		control.add_son(&control_name);
 	}
-	{ // control_start -> control
+	
+	{ // control_start(202) -> control
 		
-		control_start.set_id(202); // TODO
+		control_start.set_id(202);
 		control_start.set_text("\n start \n");
 		control_start.set_visible(true);
 		control_start.set_clickable(true);
@@ -177,22 +211,38 @@ int main() {
 		control_start.set_click_color(Color(WHITE, GREEN));
 		control.add_son(&control_start);
 	}
-	{ // control_compile -> control
+	
+	{ // control_siz(210) -> control
+		control_siz.set_id(210);
+		control_siz.set_visible(true);
+		control.add_son(&control_siz);
+	}
+	
+	{ // control_compile(203) -> control
 		control_compile.set_id(203);
 		control_compile.set_visible(true);
-		control_compile.set_position(35, 0);
+		control_compile.set_position(35, 2);
 		control.add_son(&control_compile);
 	}
-	{ // data_generator -> control_compile
+	
+	{ // data_generator(204,205) -> control_compile
 		add_check(control_compile_data_generator, control_compile_data_generator_company, 204, 205, "Edit data generator");
 	}
-	{ // answer_generator -> control_compile
+	
+	{ // answer_generator(206,207) -> control_compile
 		add_check(control_compile_answer_generator, control_compile_answer_generator_company, 206, 207, "Edit answer generator");
 	}
-	{ // tested_program -> control_compile
+	
+	{ // tested_program(208,209) -> control_compile
 		add_check(control_compile_tested_program, control_compile_tested_program_company, 208, 209, "Edit tested program");
 	}
 	
+	{ // control_information(211) -> control
+		control_information.set_id(211);
+		control_information.set_visible(true);
+		control_information.set_position(0, 20);
+		control.add_son(&control_information);
+	}
 	
 	checker_controller.start();
 	screen_element_controller.start();
@@ -225,6 +275,21 @@ int main() {
 					show_welcome();
 				}
 				screen_element_controller.start();
+			} else if (x.id == 204) {
+				now_checker -> edit_file(data_generater);
+				screen_element_controller.start();
+			} else if (x.id == 206) {
+				now_checker -> edit_file(answer_generator);
+				screen_element_controller.start();
+			} else if (x.id == 208) {
+				now_checker -> edit_file(tested_program);
+				screen_element_controller.start();
+			} else if (x.id == 205) {
+				compile(data_generater);
+			} else if (x.id == 207) {
+				compile(answer_generator);
+			} else if (x.id == 209) {
+				compile(tested_program);
 			} else {
 				show_control();
 				for (Checker* checker: checker_controller.checkers) if (checker -> get_id() == x.id) {
@@ -232,6 +297,7 @@ int main() {
 					break;
 				}
 				control_name.set_text(now_checker -> get_name());
+				control_siz.set_text("checked task: " + to_string(now_checker -> get_siz()));
 			}
 		}
 	}
@@ -246,23 +312,7 @@ void stop() {
 	exit(0);
 }
 
-void add_new_task() {
-	screen_element_controller.set_mouse_position(3, 28);
-	printf("Please enter the name of the task: |");
-	string s;
-	getline(cin, s);
-	screen_element_controller.set_mouse_position(3, 28);
-	for (int i = 1; i <= 100; i++) putchar(' ');
-	if (s == "") return;
-	checker_controller.add_new_task(s);
-	Button* button = new Button();
-	button -> set_text(checker_controller.checkers.back() -> get_name());
-	button -> set_id(checker_controller.checkers.back() -> get_id());
-	button -> set_visible(true);
-	button -> set_clickable(true);
-	button -> set_deletable(true);
-	menu.add_son(button);
-}
+
 
 // width  <= 110
 // height <= 30

@@ -210,8 +210,9 @@ public:
 		vis_ans = vis_data = vis_tested = false;
 	}
 	bool compile_file(string file) {
-		string command = "g++ \"" + path + file + ".cpp\" -o \"" + path + file + ".exe\" -std=c++14 -Wall -O2";
-		bool ret = system(command.data()) == 0;
+		string command = "g++ \"" + path + file + ".cpp\" -o \"" + path + file + ".exe\" -std=c++14 -Wall -O2 " +
+				"> \"" + path + "compile.txt\" 2>&1";
+		bool ret = (system(command.data()) == 0);
 		if (ret) {
 			if (file == tested_program) vis_tested =  true;
 			if (file == data_generater) vis_data =  true;
