@@ -58,6 +58,8 @@ void show_control() {
 	control.set_visible(true);
 }
 
+void add_new_task();
+
 void stop();
 
 
@@ -155,23 +157,13 @@ int main() {
 			} else if (x.id == 102) {
 				ShellExecute(NULL, "open", "https://github.com/hdsxwt", NULL, NULL, SW_SHOWNORMAL);
 			} else if (x.id == 10) {
-				screen_element_controller.set_mouse_position(3, 28);
-				printf("Please enter the name of the task: |");
-				string s;
-				getline(cin, s);
-				screen_element_controller.set_mouse_position(3, 28);
-				for (int i = 1; i <= 100; i++) putchar(' ');
-				checker_controller.add_new_task(s);
-				
-				Button* button = new Button();
-				button -> set_text(checker_controller.checkers.back() -> get_name());
-				button -> set_id(checker_controller.checkers.back() -> get_id());
-				button -> set_visible(true);
-				button -> set_clickable(true);
-				button -> set_deletable(true);
-				menu.add_son(button);
+				add_new_task();
 			} else if (x.typ == CALL_BACK_CONTENG_DELETE) {
 				checker_controller.del_task(x.id);
+				if (x.id == now_checker -> get_id()) {
+					now_checker = nullptr;
+					show_welcome();
+				}
 				screen_element_controller.start();
 			} else {
 				show_control();
@@ -192,6 +184,24 @@ void stop() {
 	screen_element_controller.stop();
 	checker_controller.stop();
 	exit(0);
+}
+
+void add_new_task() {
+	screen_element_controller.set_mouse_position(3, 28);
+	printf("Please enter the name of the task: |");
+	string s;
+	getline(cin, s);
+	screen_element_controller.set_mouse_position(3, 28);
+	for (int i = 1; i <= 100; i++) putchar(' ');
+	checker_controller.add_new_task(s);
+	
+	Button* button = new Button();
+	button -> set_text(checker_controller.checkers.back() -> get_name());
+	button -> set_id(checker_controller.checkers.back() -> get_id());
+	button -> set_visible(true);
+	button -> set_clickable(true);
+	button -> set_deletable(true);
+	menu.add_son(button);
 }
 
 // width  <= 110
