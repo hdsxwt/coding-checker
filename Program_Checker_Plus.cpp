@@ -39,6 +39,7 @@ Button control_compile_tested_program;
 Button control_compile_data_generator_company;
 Button control_compile_answer_generator_company;
 Button control_compile_tested_program_company;
+Button control_open_file; // TODO
 Button control_information;
 
 Checker* now_checker = nullptr;
