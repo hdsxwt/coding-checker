@@ -551,12 +551,19 @@ Call_back Button::update(bool is_root) { // update -----------------------------
 
 
 bool Button::mouse_on_button() {
-	int h = 1;
+	short h = 1;
+	short w = 0;
 	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n') h++;
+	size_t l = 0, r = 0;
+	for (r = 0; r < text.size(); r++) {
+		w = std::max(w, short(r - l));
+		if (text[r] == '\n') l = r+1;
+	}
+	w = std::max(w, short(r - l));
 	return recent_mouse_position.Y >= global_position.Y &&
 			recent_mouse_position.Y <= global_position.Y + h - 1 &&
 			recent_mouse_position.X >= (global_position.X + deep * 2) &&
-			recent_mouse_position.X <= (global_position.X + deep * 2) + (short)text.size() - 1;
+			recent_mouse_position.X <= (global_position.X + deep * 2) + w - 1;
 }
 
 Call_back Fold_button::update(bool is_root) { // update --------------------------------------------------------------------------------
