@@ -31,6 +31,8 @@ Button control;
 Button control_name;
 Button control_start; // TODO
 Button control_stop; // TODO
+Button control_open_file; // TODO
+Button control_del_file; // TODO
 Button control_siz;
 Button control_compile;
 Button control_compile_data_generator;
@@ -39,7 +41,6 @@ Button control_compile_tested_program;
 Button control_compile_data_generator_company;
 Button control_compile_answer_generator_company;
 Button control_compile_tested_program_company;
-Button control_open_file; // TODO
 Button control_information;
 
 Checker* now_checker = nullptr;
@@ -117,6 +118,17 @@ void update_vis() {
 	f(control_compile_data_generator_company, now_checker -> get_vis_data());
 	f(control_compile_answer_generator_company, now_checker -> get_vis_ans());
 	f(control_compile_tested_program_company, now_checker -> get_vis_tested());
+	if (now_checker -> get_vis_data() && now_checker -> get_vis_ans() && now_checker -> get_vis_tested()) {
+		control_start.set_clickable(true);
+		control_start.set_normal_color(Color(WHITE, GREEN));
+		control_start.set_highlight_color(Color(BRIGHTWHITE,BRIGHTGREEN));
+		control_start.set_click_color(Color(WHITE, GREEN));
+	} else {
+		control_start.set_clickable(false);
+		control_start.set_normal_color(Color(WHITE, BRIGHTBLACK));
+		control_start.set_highlight_color(default_highlight_color);
+		control_start.set_click_color(default_click_color);
+	}
 }
 
 void compile(string file) {
@@ -228,10 +240,8 @@ int main() {
 		control_start.set_id(202);
 		control_start.set_text("\n start \n");
 		control_start.set_visible(true);
-		control_start.set_clickable(true);
-		control_start.set_normal_color(Color(WHITE, GREEN));
-		control_start.set_highlight_color(Color(BRIGHTWHITE, BRIGHTGREEN));
-		control_start.set_click_color(Color(WHITE, GREEN));
+		control_start.set_clickable(false);
+		control_start.set_normal_color(Color(WHITE, BRIGHTBLACK));
 		control.add_son(&control_start);
 	}
 	
@@ -245,6 +255,32 @@ int main() {
 		control_start.add_son(&control_stop);
 	}
 	
+	{ // open_file(213) -> control
+		control_open_file.set_id(213);
+		control_open_file.set_text("\n open \n file \n");
+		control_open_file.set_visible(true);
+		control_open_file.set_clickable(true);
+		control_open_file.set_position(10,0);
+		control_open_file.set_height(0);
+		control_open_file.set_normal_color(Color(WHITE, BLUE));
+		control_open_file.set_highlight_color(Color(BRIGHTWHITE, BRIGHTBLUE));
+		control_open_file.set_click_color(Color(WHITE, BLUE));
+		control_stop.add_son(&control_open_file);
+	}
+	
+	{ // del_file(214) -> control
+		control_del_file.set_id(214);
+		control_del_file.set_text("\n open \n file \n");
+		control_del_file.set_visible(true);
+		control_del_file.set_clickable(true);
+		control_del_file.set_position(10,0);
+		control_del_file.set_height(0);
+		control_del_file.set_normal_color(Color(WHITE, RED));
+		control_del_file.set_highlight_color(Color(BRIGHTWHITE, BRIGHTRED));
+		control_del_file.set_click_color(Color(WHITE, RED));
+		control_open_file.add_son(&control_del_file);
+	}
+	
 	{ // control_siz(210) -> control
 		control_siz.set_id(210);
 		control_siz.set_visible(true);
@@ -254,7 +290,7 @@ int main() {
 	{ // control_compile(203) -> control
 		control_compile.set_id(203);
 		control_compile.set_visible(true);
-		control_compile.set_position(35, 2);
+		control_compile.set_position(44, 2);
 		control.add_son(&control_compile);
 	}
 	
@@ -325,6 +361,13 @@ int main() {
 				compile(answer_generator);
 			} else if (x.id == 209) {
 				compile(tested_program);
+			} else if (x.id == 213) {
+				now_checker -> open_files();
+			} else if (x.id == 214) {
+				bool ret = MessageBox(GetActiveWindow(), "Do you really want to DELETE all the tasks",
+					"Warning", MB_OKCANCEL|MB_ICONWARNING);
+				if (ret == IDOK) now_checker -> del_files();
+				screen_element_controller.start();
 			} else {
 				show_control();
 				for (Checker* checker: checker_controller.checkers) if (checker -> get_id() == x.id) {
