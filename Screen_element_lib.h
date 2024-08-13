@@ -121,13 +121,15 @@ struct output_content{ // print ------------------------------------------------
 	bool typ;
 	bool indent_line;
 	short deep;
-	output_content(Color color, COORD position, short deep, bool typ, bool indent_line, string text) {
+	short max_length;
+	output_content(Color color, COORD position, short deep, bool typ, bool indent_line, string text, short max_length) {
 		this -> color = color;
 		this -> position = position;
 		this -> deep = deep;
 		this -> typ = typ;
 		this -> indent_line = indent_line;
 		this -> text = text;
+		this -> max_length = max_length;
 	}
 };
 
@@ -147,12 +149,14 @@ void print(output_content output) {
 	}
 	
 	screen_element_controller.set_color(output.color);
-	short cnt = 0;
+	short cnt = 0, p = 0;
 	for (size_t i = 0; i < output.text.size(); i++) {
-		if (output.text[i] != '\n') {
-			putchar(output.text[i]);
-		} else {
+		if (output.text[i] == '\n' || (output.max_length != -1 && p >= output.max_length)) {
 			screen_element_controller.set_mouse_position(output.position + COORD{output.deep, ++cnt});
+			p = 0;
+		} else {
+			putchar(output.text[i]);
+			p++;
 		}
 	}
 }
@@ -197,6 +201,7 @@ private:
 	bool auto_position;
 	short deep;
 	bool indent_line;
+	short max_length;
 	
 	// visible
 	bool last_visible;
@@ -245,6 +250,7 @@ public:
 		this -> deep = 0;
 		this -> height = -1;
 		this -> indent_line = false;
+		this -> max_length = -1;
 		
 		// text
 		this -> last_text = "";
@@ -280,11 +286,13 @@ public:
 	void set_height        (short height)       { this -> height = height; }
 	void set_deep          (short deep)         { this -> deep = deep; }
 	void set_indent_line   (bool indent_line)   { this -> indent_line = indent_line; }
+	void set_max_length    (short max_length)     { this -> max_length = max_length; }
 	COORD get_position        () { return position; }
 	COORD get_global_position () { return global_position; }
 	short get_height          () { return height; }
 	short get_deep            () { return deep; }
 	bool get_indent_line      () { return indent_line; }
+	short get_max_length        () { return max_length; }
 	// visible
 	void set_visible (bool visible) { this -> visible = visible; }
 	bool get_visible      () { return visible; }
@@ -374,7 +382,7 @@ void Button::del() {
 	// clear output
 	string s(text.size(), ' ');
 	for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n') s[i] = '\n';
-	clear_cache.push_back(output_content(default_color, global_position , deep*2, false, indent_line, s));
+	clear_cache.push_back(output_content(default_color, global_position , deep*2, false, indent_line, s, max_length));
 	
 	
 	for (auto button: son) {
@@ -444,7 +452,7 @@ void Button::print(bool typ) { // print ----------------------------------------
 	if (global_position != last_global_position || last_text != text) { 
 		string s(last_text.size(), ' ');
 		for (size_t i = 0; i < last_text.size(); i++) if (last_text[i] == '\n') s[i] = '\n';
-		clear_cache.push_back(output_content(default_color, last_global_position , deep*2, false, indent_line, s));
+		clear_cache.push_back(output_content(default_color, last_global_position , deep*2, false, indent_line, s, max_length));
 		last_global_position = global_position;
 		last_text = text;
 	}
@@ -452,11 +460,11 @@ void Button::print(bool typ) { // print ----------------------------------------
 	// output new
 	if (typ) {
 		if (!real_visible) return;
-		output_cache.push_back(output_content(recent_color, global_position, deep*2, true, indent_line, text));
+		output_cache.push_back(output_content(recent_color, global_position, deep*2, true, indent_line, text, max_length));
 	} else {
 		string s(text.size(), ' ');
 		for (size_t i = 0; i < text.size(); i++) if (text[i] == '\n') s[i] = '\n';
-		clear_cache.push_back(output_content(default_color, last_global_position, deep*2, false, indent_line, s));
+		clear_cache.push_back(output_content(default_color, last_global_position, deep*2, false, indent_line, s, max_length));
 	}
 }
 
