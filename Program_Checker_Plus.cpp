@@ -29,10 +29,9 @@ Button welcome_shown_text;
 Button welcome_author;
 Button control;
 Button control_name;
-Button control_start; // TODO
-Button control_stop; // TODO
-Button control_open_file; // TODO
-Button control_del_file; // TODO
+Button control_start;
+Button control_open_file;
+Button control_del_file;
 Button control_siz;
 Button control_compile;
 Button control_compile_data_generator;
@@ -83,6 +82,87 @@ void add_new_task() {
 	menu.add_son(button);
 }
 
+int toInt(const char *s) {
+	int ret = 0;
+	for (size_t i = 0; i < strlen(s); i++) {
+		if (s[i] >= '0' && s[i] <= '9') {
+			ret = ret * 10 + s[i] - '0';
+		} else {
+			throw (1);
+		}
+	}
+	return ret;
+}
+
+void start() {
+	auto clear = [&] () -> void {
+		system("cls");
+		screen_element_controller.start();
+		FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+		screen_element_controller.set_mouse_position(40,15);
+		printf("Please click the window once.");
+		while (1) {
+			if (!screen_element_controller.get_mouse_event()) continue;
+			if (!recent_mouse_event.dwButtonState) break;
+		}
+		screen_element_controller.set_mouse_position(40,15);
+		printf("                             ");
+		root.update(true, true);
+	};
+	int n;
+	system("cls");
+	while (1) {
+		printf("please enter the number of sample you want (enter 0 to exit): ");
+		char c[20];
+		scanf("%s", c);
+		
+		try {
+			n = toInt(c);
+			if (n < 0) throw(2);
+			
+			if (n == 0) return clear();
+			else break;
+		} catch (int x) {
+			if (x == 1) {
+				printf("please enter a number.\n");
+			} else {
+				printf("please enter a number larger than 0.\n");
+			}
+		}
+	}
+	system("cls");
+	int WA = 0;
+	for (int i = 1; i <= n; i++) {
+		printf("press ");
+		screen_element_controller.set_color(Color(BRIGHTWHITE, BRIGHTGREEN));
+		printf("ANY CHARACTER");
+		screen_element_controller.set_color(default_color);
+		printf(" to stop.\n\n");
+		bool ret = now_checker -> check();
+		if (!ret) WA++;
+		
+		putchar('[');
+		bool first = true;
+		for (int j = 0; j < 100; j++) {
+			if (j*n < i*100) {
+				putchar('=');
+			} else {
+				putchar(" >"[first]);
+				first = false;
+			}
+		}
+		putchar(']');
+		putchar('\n');
+		
+		printf("%d / %d  (%.3f)\n", i, n, (double)i / n);
+		// TODO
+	}
+	char message[40];
+	sprintf(message, "Done!\nSample: %d\nError: %d\nAC%%: %.2f%%", n, WA, (double)(n - WA)/n * 100);
+	MessageBox(NULL, message, "Program Checker", MB_OK);
+	clear();
+}
+
 
 void add_generator(Button &generator, Button &company, int a, int b, string s) {
 	generator.set_id(a);
@@ -131,6 +211,16 @@ void update_vis() {
 	}
 }
 
+void update_siz() {
+	int sum = now_checker -> get_siz_all();
+	int WA = now_checker -> get_siz();
+	string s = "checked task: sum:" + to_string(sum) +
+	"  AC:" + to_string(sum - WA) + 
+	"  WA:" + to_string(WA) + 
+	"  AC%:" + to_string((double)(sum - WA) / sum*100);
+	control_siz.set_text(s);
+}
+
 void compile(string file) {
 	bool ret = now_checker -> compile_file(file);
 	if (ret) {
@@ -144,6 +234,7 @@ void compile(string file) {
 	update_vis();
 	screen_element_controller.start();
 }
+
 
 void stop();
 
@@ -245,16 +336,6 @@ int main() {
 		control.add_son(&control_start);
 	}
 	
-	{ // control_stop(212) -> control
-		control_stop.set_id(212);
-		control_stop.set_text("\n stop \n");
-		control_stop.set_visible(true);
-		control_stop.set_position(10,0);
-		control_stop.set_height(0);
-		control_stop.set_normal_color(Color(WHITE, BRIGHTBLACK));
-		control_start.add_son(&control_stop);
-	}
-	
 	{ // open_file(213) -> control
 		control_open_file.set_id(213);
 		control_open_file.set_text("\n open \n file \n");
@@ -265,12 +346,12 @@ int main() {
 		control_open_file.set_normal_color(Color(WHITE, BLUE));
 		control_open_file.set_highlight_color(Color(BRIGHTWHITE, BRIGHTBLUE));
 		control_open_file.set_click_color(Color(WHITE, BLUE));
-		control_stop.add_son(&control_open_file);
+		control_start.add_son(&control_open_file);
 	}
 	
 	{ // del_file(214) -> control
 		control_del_file.set_id(214);
-		control_del_file.set_text("\n open \n file \n");
+		control_del_file.set_text("\n del  \n file \n");
 		control_del_file.set_visible(true);
 		control_del_file.set_clickable(true);
 		control_del_file.set_position(10,0);
@@ -283,6 +364,7 @@ int main() {
 	
 	{ // control_siz(210) -> control
 		control_siz.set_id(210);
+		control_siz.set_position(0,10);
 		control_siz.set_visible(true);
 		control.add_son(&control_siz);
 	}
@@ -309,7 +391,7 @@ int main() {
 	{ // control_information(211) -> control
 		control_information.set_id(211);
 		control_information.set_visible(true);
-		control_information.set_position(0, 11);
+		control_information.set_position(0, 12);
 		control_information.set_max_length(70);
 		control_information.set_text("information");
 		control.add_son(&control_information);
@@ -368,6 +450,10 @@ int main() {
 					"Warning", MB_OKCANCEL|MB_ICONWARNING);
 				if (ret == IDOK) now_checker -> del_files();
 				screen_element_controller.start();
+				update_siz();
+			} else if (x.id == 202) { // start
+				start();
+				update_siz();
 			} else {
 				show_control();
 				for (Checker* checker: checker_controller.checkers) if (checker -> get_id() == x.id) {
@@ -375,8 +461,8 @@ int main() {
 					break;
 				}
 				control_name.set_text(now_checker -> get_name());
-				control_siz.set_text("checked task: " + to_string(now_checker -> get_siz()));
 				update_vis();
+				update_siz();
 			}
 		}
 	}

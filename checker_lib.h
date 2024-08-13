@@ -39,7 +39,7 @@ const int mod = 998244353;
 int hsh(string str) {
 	int ret = 0;
 	for (size_t i = 0; i < str.size(); i++) ret = ((long long)ret * hshb % mod + str[i]) % mod;
-	return ret;
+	return ret + 1000;
 }
 
 
@@ -47,6 +47,7 @@ class Checker { // tested
 private:
 	int id;
 	short siz;
+	short siz_all;
 	string path;
 	string name;
 	short mode;
@@ -62,17 +63,19 @@ public:
 	void set_id (string name) { set_id(hsh(name)); }
 	void set_id   (int id) {this -> id = id; }
 	void set_siz  (short siz) {this -> siz = siz;}
+	void set_siz_all (short siz_all) {this -> siz_all = siz_all; }
 	void set_path (string path) { this -> path = path; }
 	void set_mode (short mode) {
 		if (mode < 0 || mode > 4) throw ("Not a Cheker mode.");
 		this -> mode = mode;
 	}
 	void set_name (string name) { this -> name = name; }
-	int get_id      () { return id; }
-	short get_mode  () { return mode; }
-	short get_siz   () { return siz; }
-	string get_path () { return path; }
-	string get_name () { return name; }
+	int get_id        () { return id; }
+	short get_mode    () { return mode; }
+	short get_siz     () { return siz; }
+	short get_siz_all () { return siz_all; }
+	string get_path   () { return path; }
+	string get_name   () { return name; }
 	bool get_vis_tested () { return vis_tested; }
 	bool get_vis_ans    () { return vis_ans; }
 	bool get_vis_data   () { return vis_data; }
@@ -169,6 +172,7 @@ public:
 	void write() {
 		json config;
 		config["siz"] = siz;
+		config["siz_all"] = siz_all;
 		config["mode"] = mode;
 		config["vis_data"] = vis_data;
 		config["vis_ans"] = vis_ans;
@@ -195,6 +199,7 @@ public:
 			}
 			in.close();
 			this -> siz = config["siz"];
+			this -> siz_all = config["siz_all"];
 			this -> mode = config["mode"];
 			this -> vis_data = config["vis_data"];
 			this -> vis_ans =  config["vis_ans"];
@@ -240,8 +245,9 @@ public:
 		if (!ret) {
 			siz++;
 			cpy();
-			write();
 		}
+		siz_all++;
+		write();
 		return ret;
 	}
 	void del_files(bool typ = false) {
@@ -249,7 +255,7 @@ public:
 		string command = "del " + del_path + " /Q";
 		system(command.data());
 		if (typ) RemoveDirectory(del_path.data());
-		siz = 0;
+		siz = siz_all = 0;
 		write();
 	}
 	

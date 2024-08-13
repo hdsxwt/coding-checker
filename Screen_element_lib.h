@@ -317,7 +317,7 @@ public:
 	void set_id (int id) { this -> id = id; }
 	int  get_id () { return id; }
 	// process
-	virtual Call_back update(bool is_root = true);
+	virtual Call_back update(bool is_root = true, bool force = false);
 	
 private:
 	void set_fa (Button* fa) { this -> fa = fa;}
@@ -360,7 +360,7 @@ public:
 	string get_open_text  () { return open_text; }
 	string get_close_text () { return close_text; }
 	// others
-	virtual Call_back update(bool is_root);
+	virtual Call_back update(bool is_root, bool force);
 	void reset() { last_open = (fa -> get_folded()); open = !(fa -> get_folded()); }
 	virtual Fold_button* get_class_name() { return this; }
 };
@@ -372,7 +372,7 @@ public:
 		this -> height = 0;
 		this -> id = ++psz;
 	}
-	virtual Call_back update(bool is_root);
+	virtual Call_back update(bool is_root, bool force);
 	virtual Del_button* get_class_name() { return this; }
 };
 
@@ -468,7 +468,7 @@ void Button::print(bool typ) { // print ----------------------------------------
 	}
 }
 
-Call_back Button::update(bool is_root) { // update -----------------------------------------------------------------------------------------------
+Call_back Button::update(bool is_root, bool force) { // update -----------------------------------------------------------------------------------------------
 
 	if (auto_position) { // set position
 		if (lst != nullptr) {
@@ -524,7 +524,7 @@ Call_back Button::update(bool is_root) { // update -----------------------------
 	}
 	
 	if (recent_color != last_color || last_visible != real_visible ||
-				global_position != last_global_position || last_text != text) {
+				global_position != last_global_position || last_text != text || force) {
 		print(real_visible);
 		last_color = recent_color;
 		last_visible = real_visible;
@@ -538,7 +538,7 @@ Call_back Button::update(bool is_root) { // update -----------------------------
 	}
 	
 	for (Button* button: son) {
-		ret += (button -> update(false));
+		ret += (button -> update(false, force));
 		if (!folded && button -> auto_position) height += button -> height + 1;
 	}
 	
@@ -566,8 +566,8 @@ bool Button::mouse_on_button() {
 			recent_mouse_position.X <= (global_position.X + deep * 2) + w - 1;
 }
 
-Call_back Fold_button::update(bool is_root) { // update --------------------------------------------------------------------------------
-	Call_back call_back = this -> Button::update(false);
+Call_back Fold_button::update(bool is_root, bool force) { // update --------------------------------------------------------------------------------
+	Call_back call_back = this -> Button::update(false, force);
 	
 	if (!call_back.empty()) {
 		open = !open;
@@ -587,8 +587,8 @@ Call_back Fold_button::update(bool is_root) { // update ------------------------
 	return Call_back();
 }
 
-Call_back Del_button::update(bool is_root) { // update ------------------------------------------------------------------------------------------------
-	Call_back call_back = this -> Button::update(false);
+Call_back Del_button::update(bool is_root, bool force) { // update ------------------------------------------------------------------------------------------------
+	Call_back call_back = this -> Button::update(false, force);
 	if (!call_back.empty()) {
 		int ret = MessageBox(GetActiveWindow(), "Do you really want to DELETE the tasks?", "Warning", MB_OKCANCEL|MB_ICONWARNING);
 		if (ret == IDOK) {
