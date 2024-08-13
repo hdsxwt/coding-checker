@@ -95,6 +95,7 @@ int toInt(const char *s) {
 }
 
 void start() {
+#define KEY(VK_NONAME) ((GetAsyncKeyState(VK_NONAME) & 0x8000) ? 1:0)
 	auto clear = [&] () -> void {
 		system("cls");
 		screen_element_controller.start();
@@ -140,11 +141,11 @@ void start() {
 		printf(" to stop.\n\n");
 		bool ret = now_checker -> check();
 		if (!ret) WA++;
-		
+		screen_element_controller.set_mouse_position(0,0);
 		putchar('[');
 		bool first = true;
 		for (int j = 0; j < 100; j++) {
-			if (j*n < i*100) {
+			if (j*n < i*100) { // j / 100: i / n
 				putchar('=');
 			} else {
 				putchar(" >"[first]);
@@ -154,8 +155,33 @@ void start() {
 		putchar(']');
 		putchar('\n');
 		
-		printf("%d / %d  (%.3f)\n", i, n, (double)i / n);
-		// TODO
+		printf("%d / %d  (%.3f)\n\n", i, n, (double)i / n);
+		
+		putchar('[');
+		screen_element_controller.set_color(Color(BRIGHTGREEN, BLACK));
+		first = true;
+		for (int j = 0; j < 100; j++) {
+			if (j*i <= (i-WA)*100) { // j / 100: (i - WA) : i
+				putchar('=');
+			} else {
+				if (first) {
+					screen_element_controller.set_color(Color(BRIGHTRED,BLACK));
+				}
+				putchar('=');
+				first = false;
+			}
+		}
+		screen_element_controller.set_color(default_color);
+		putchar(']');
+		putchar('\n');
+		
+		printf("AC:%d  WA:%d  AC%%:%.1f%%", i-WA, WA, (double)(i-WA)/i*100);
+		int ok = true;
+		for (int j = 0; j < 26; j++) if (KEY('A' + j)) {
+			ok = false;
+			break;
+		}
+		if (!ok) break;
 	}
 	char message[40];
 	sprintf(message, "Done!\nSample: %d\nError: %d\nAC%%: %.2f%%", n, WA, (double)(n - WA)/n * 100);
