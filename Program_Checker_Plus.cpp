@@ -30,11 +30,16 @@ Button welcome_author;
 Button control;
 Button control_name;
 Button control_start;
-Button control_compile;
-Button control_compile_data_generator;
-Button control_compile_answwer_generator;
-Button control_compile_tested_program;
-Button control_bottom;
+Button control_compile; 
+Button control_compile_data_generator; //
+Button control_compile_answer_generator; //
+Button control_compile_tested_program; //
+Button control_compile_data_generator_company; //
+Button control_compile_answer_generator_company; //
+Button control_compile_tested_program_company; //
+Button control_compile_siz; //
+Button control_compile_open_file; //
+Button control_information;
 
 Checker* now_checker = nullptr;
 
@@ -64,74 +69,145 @@ void stop();
 
 
 int main() {
-	
-	home_button.set_visible(true);
-	home_button.set_clickable(true);
-	home_button.set_id(1);
-	home_button.set_text("Home");
-	root.add_son(&home_button);
-	
-	menu.set_visible(true);
-	menu.set_foldable(true);
-	menu.fold();
-	menu.set_id(2);
-	menu.set_text("Tested Programme Menu");
-	root.add_son(&menu);
+	{ // home_button -> root
 		
-	add_tk.set_text("Add new task +");
-	add_tk.set_visible(true);
-	add_tk.set_clickable(true);
-	add_tk.set_id(10);
-	menu.add_son(&add_tk);
-	
-	ext.set_visible(true);
-	ext.set_clickable(true);
-	ext.set_id(3);
-	ext.set_text("Exit");
-	ext.set_normal_color(Color(RED, BLACK));
-	ext.set_highlight_color(Color(BRIGHTWHITE, BRIGHTRED));
-	ext.set_click_color(Color(RED, BLACK));
-	root.add_son(&ext);
-	
-	string line = "|\n";
-	line = line * 28;
-	seperate_line.set_visible(true);
-	seperate_line.set_text(line);
-	seperate_line.set_position(30,0);
-	seperate_line.set_id(50);
-	root.add_son(&seperate_line);
-	
-	welcome.set_id(100);
-	welcome.set_position(35, 0);
-	root.add_son(&welcome);
-	control.set_id(200);
-	control.set_position(35, 0);
-	root.add_son(&control);
-	
-	welcome_shown_text.set_id(101);
-	welcome_shown_text.set_visible(true);
-	welcome_shown_text.set_text(welcome_text);
-	welcome.add_son(&welcome_shown_text);
-	
-	welcome_author.set_id(102);
-	welcome_author.set_visible(true);
-	welcome_author.set_clickable(true);
-	welcome_author.set_text("Github: hdsxwt");
-	welcome.add_son(&welcome_author);
-	
-	control_name.set_id(201);
-	control_name.set_visible(true);
-	control_name.set_normal_color(default_highlight_color);
-	control.add_son(&control_name);
-	
-	control_start.set_id(202);
-	control_start.set_text("\n start \n");
-	control_start.set_visible(true);
-	control_start.set_clickable(true);
-	control_start.set_normal_color(Color(WHITE, GREEN));
-	control_start.set_highlight_color(Color(BRIGHTWHITE, BRIGHTGREEN));
-	control_start.set_click_color(Color(WHITE, GREEN));
-	control.add_son(&control_start);
+		home_button.set_visible(true);
+		home_button.set_clickable(true);
+		home_button.set_id(1);
+		home_button.set_text("Home");
+		root.add_son(&home_button);
+	}
+	{ // menu -> root
+		
+		menu.set_visible(true);
+		menu.set_foldable(true);
+		menu.fold();
+		menu.set_id(2);
+		menu.set_text("Tested Programme Menu");
+		root.add_son(&menu);
+	}
+	{ // add_tk -> menu
+		
+		add_tk.set_text("Add new task +");
+		add_tk.set_visible(true);
+		add_tk.set_clickable(true);
+		add_tk.set_id(10);
+		menu.add_son(&add_tk);
+	}
+	{ // ext -> root
+		
+		ext.set_visible(true);
+		ext.set_clickable(true);
+		ext.set_id(3);
+		ext.set_text("Exit");
+		ext.set_normal_color(Color(RED, BLACK));
+		ext.set_highlight_color(Color(BRIGHTWHITE, BRIGHTRED));
+		ext.set_click_color(Color(RED, BLACK));
+		root.add_son(&ext);
+	}
+	{ // seperate_line -> root
+		
+		string line = "|\n";
+		line = line * 28;
+		seperate_line.set_visible(true);
+		seperate_line.set_text(line);
+		seperate_line.set_position(30,0);
+		seperate_line.set_id(50);
+		root.add_son(&seperate_line);
+	}
+	{ // welcome & control -> root
+		
+		welcome.set_id(100);
+		welcome.set_position(35, 0);
+		root.add_son(&welcome);
+		control.set_id(200);
+		control.set_position(35, 0);
+		root.add_son(&control);
+	}
+	{ // welcome_shown_text -> welcome
+		
+		welcome_shown_text.set_id(101);
+		welcome_shown_text.set_visible(true);
+		welcome_shown_text.set_text(welcome_text);
+		welcome.add_son(&welcome_shown_text);
+	}
+	{ // welcome_author -> welcome
+		
+		welcome_author.set_id(102);
+		welcome_author.set_visible(true);
+		welcome_author.set_clickable(true);
+		welcome_author.set_text("Github: hdsxwt");
+		welcome.add_son(&welcome_author);
+	}
+	{ // control_name -> control
+		
+		control_name.set_id(201);
+		control_name.set_visible(true);
+		control_name.set_normal_color(default_highlight_color);
+		control.add_son(&control_name);
+	}
+	{ // control_start -> control
+		
+		control_start.set_id(202); // TODO
+		control_start.set_text("\n start \n");
+		control_start.set_visible(true);
+		control_start.set_clickable(true);
+		control_start.set_normal_color(Color(WHITE, GREEN));
+		control_start.set_highlight_color(Color(BRIGHTWHITE, BRIGHTGREEN));
+		control_start.set_click_color(Color(WHITE, GREEN));
+		control.add_son(&control_start);
+	}
+	{ // control_compile -> control
+		control_compile.set_id(203);
+		control_compile.set_visible(true);
+		control_compile.set_position(35, 0);
+		control.add_son(&control_compile);
+	}
+	{ // data_generator -> control_compile
+		control_compile_data_generator.set_id(204); // TODO
+		control_compile_data_generator.set_text("Edit data generator");
+		control_compile_data_generator.set_visible(true);
+		control_compile_data_generator.set_clickable(true);
+		control_compile.add_son(&control_compile_data_generator);
+		
+		control_compile_data_generator_company.set_id(205);
+		control_compile_data_generator_company.set_text("unready");
+		control_compile_data_generator_company.set_visible(true);
+		control_compile_data_generator_company.set_normal_color(Color(BRIGHTRED, BLACK));
+		control_compile_data_generator_company.set_position(20, 0);
+		control_compile_data_generator_company.set_height(0);
+		control_compile_data_generator.add_son(&control_compile_data_generator_company);
+	}
+	{ // answer_generator -> control_compile
+		control_compile_answer_generator.set_id(206); // TODO
+		control_compile_answer_generator.set_text("Edit answer generator");
+		control_compile_answer_generator.set_visible(true);
+		control_compile_answer_generator.set_clickable(true);
+		control_compile.add_son(&control_compile_answer_generator);
+		
+		control_compile_answer_generator_company.set_id(207);
+		control_compile_answer_generator_company.set_text("unready");
+		control_compile_answer_generator_company.set_visible(true);
+		control_compile_answer_generator_company.set_normal_color(Color(BRIGHTRED, BLACK));
+		control_compile_answer_generator_company.set_position(20, 0);
+		control_compile_answer_generator_company.set_height(0);
+		control_compile_answer_generator.add_son(&control_compile_answer_generator_company);
+	}
+	{ // tested_program -> control_compile
+		control_compile_tested_program.set_id(208); // TODO
+		control_compile_tested_program.set_text("Edit tested program");
+		control_compile_tested_program.set_visible(true);
+		control_compile_tested_program.set_clickable(true);
+		control_compile.add_son(&control_compile_tested_program);
+		
+		control_compile_tested_program_company.set_id(209);
+		control_compile_tested_program_company.set_text("unready");
+		control_compile_tested_program_company.set_visible(true);
+		control_compile_tested_program_company.set_normal_color(Color(BRIGHTRED, BLACK));
+		control_compile_tested_program_company.set_position(20, 0);
+		control_compile_tested_program_company.set_height(0);
+		control_compile_tested_program.add_son(&control_compile_tested_program_company);
+	}
 	
 	
 	checker_controller.start();
