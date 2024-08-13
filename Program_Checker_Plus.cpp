@@ -155,7 +155,7 @@ void start() {
 		putchar(']');
 		putchar('\n');
 		
-		printf("%d / %d  (%.3f)\n\n", i, n, (double)i / n);
+		printf("%d / %d  (%.1f%%)\n\n", i, n, (double)i / n*100);
 		
 		putchar('[');
 		screen_element_controller.set_color(Color(BRIGHTGREEN, BLACK));
