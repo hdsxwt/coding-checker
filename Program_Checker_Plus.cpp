@@ -32,15 +32,24 @@ Button control_name;
 Button control_start;
 Button control_open_file;
 Button control_del_file;
+Button control_change_mode;
 Button control_siz;
 Button control_compile;
+
 Button control_compile_data_generator;
 Button control_compile_answer_generator;
 Button control_compile_tested_program;
 Button control_compile_data_generator_company;
 Button control_compile_answer_generator_company;
 Button control_compile_tested_program_company;
+
+Button control_mode_menu;
+const string modes_names[5] = {"Whole Match", "Ignore Space", "3 decimal places", "5 decimal places", "8 decimal places"};
+Button modes[5];
+
+
 Button control_information;
+
 
 Checker* now_checker = nullptr;
 
@@ -262,6 +271,19 @@ void compile(string file) {
 }
 
 
+void add_mode_changer() {
+	for (int i = 0; i < 5; i++) {
+		Button &button = modes[i];
+		button.set_id(300+i);
+		button.set_text(modes_names[i]);
+		button.set_visible(false); // !!!
+		button.set_clickable(true);
+	}
+	// TODO
+	// 300+
+}
+
+
 void stop();
 
 int main() {
@@ -279,7 +301,6 @@ int main() {
 		
 		menu.set_visible(true);
 		menu.set_foldable(true);
-		menu.fold();
 		menu.set_id(2);
 		menu.set_text("Tested Programme Menu");
 		root.add_son(&menu);
@@ -355,7 +376,7 @@ int main() {
 	{ // control_start(202) -> control
 		
 		control_start.set_id(202);
-		control_start.set_text("\n start \n");
+		control_start.set_text("\n start \n       \n");
 		control_start.set_visible(true);
 		control_start.set_clickable(false);
 		control_start.set_normal_color(Color(WHITE, BRIGHTBLACK));
@@ -388,6 +409,19 @@ int main() {
 		control_open_file.add_son(&control_del_file);
 	}
 	
+	{ // change_mode(215) -> control
+		control_change_mode.set_id(215);
+		control_change_mode.set_text("\n cmp  \n type \n");
+		control_change_mode.set_visible(true);
+		control_change_mode.set_clickable(true);
+		control_change_mode.set_position(10, 0);
+		control_change_mode.set_height(0);
+		control_change_mode.set_normal_color(Color(BLACK, YELLOW));
+		control_change_mode.set_highlight_color(Color(BRIGHTBLACK, BRIGHTYELLOW));
+		control_change_mode.set_click_color(Color(BLACK, YELLOW));
+		control_del_file.add_son(&control_change_mode);
+	}
+	
 	{ // control_siz(210) -> control
 		control_siz.set_id(210);
 		control_siz.set_position(0,10);
@@ -402,6 +436,13 @@ int main() {
 		control.add_son(&control_compile);
 	}
 	
+	{ // control_mode_menu(299) -> control
+		control_mode_menu.set_id(299);
+		control_mode_menu.set_visible(true);
+		control_mode_menu.set_position(44,2);
+		control.add_son(&control_mode_menu);
+	}
+	
 	{ // data_generator(204,205) -> control_compile
 		add_generator(control_compile_data_generator, control_compile_data_generator_company, 204, 205, "Edit data generator");
 	}
@@ -412,6 +453,10 @@ int main() {
 	
 	{ // tested_program(208,209) -> control_compile
 		add_generator(control_compile_tested_program, control_compile_tested_program_company, 208, 209, "Edit tested program");
+	}
+	
+	{ // mode_changer
+		add_mode_changer();
 	}
 	
 	{ // control_information(211) -> control
