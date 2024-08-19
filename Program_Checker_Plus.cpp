@@ -276,11 +276,28 @@ void add_mode_changer() {
 		Button &button = modes[i];
 		button.set_id(300+i);
 		button.set_text(modes_names[i]);
-		button.set_visible(false); // !!!
+		button.set_visible(true); 
 		button.set_clickable(true);
+		control_mode_menu.add_son(&button);
 	}
-	// TODO
+	// TODO add proccess
 	// 300+
+}
+
+void start_change_mode() {
+	control_mode_menu.set_visible(true);
+	control_compile.set_visible(false);
+	for (int i = 0; i < 5; i++) {
+		Button &button = modes[i];
+		button.set_normal_color(default_color);
+	}
+	Button &button = modes[now_checker -> get_mode()];
+	button.set_normal_color(default_click_color);
+}
+
+void stop_change_mode() {
+	control_mode_menu.set_visible(false);
+	control_compile.set_visible(true);
 }
 
 
@@ -438,8 +455,8 @@ int main() {
 	
 	{ // control_mode_menu(299) -> control
 		control_mode_menu.set_id(299);
-		control_mode_menu.set_visible(true);
-		control_mode_menu.set_position(44,2);
+		control_mode_menu.set_visible(false);
+		control_mode_menu.set_position(48,2);
 		control.add_son(&control_mode_menu);
 	}
 	
@@ -525,6 +542,11 @@ int main() {
 			} else if (x.id == 202) { // start
 				start();
 				update_siz();
+			} else if (x.id == 215) {
+				start_change_mode();
+			} else if (x.id >= 300 && x.id <= 304) {
+				Button &button = modes[x.id - 300];
+				
 			} else {
 				show_control();
 				for (Checker* checker: checker_controller.checkers) if (checker -> get_id() == x.id) {
