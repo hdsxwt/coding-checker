@@ -45,6 +45,8 @@ Button control_compile_tested_program_company;
 
 Button control_mode_menu;
 const string modes_names[5] = {"Whole Match", "Ignore Space", "3 decimal places", "5 decimal places", "8 decimal places"};
+const string modes_title[5] = {"\nWhole \nMatch \n", "\nIgnore\nSpace \n",
+		"\n  3   \nfloat \n", "\n  5   \nfloat \n", "\n  8   \nfloat \n"};
 Button modes[5];
 
 
@@ -195,6 +197,7 @@ void start() {
 	char message[40];
 	sprintf(message, "Done!\nSample: %d\nError: %d\nAC%%: %.2f%%", n, WA, (double)(n - WA)/n * 100);
 	MessageBox(NULL, message, "Program Checker", MB_OK);
+	// TODO
 	clear();
 }
 
@@ -280,7 +283,6 @@ void add_mode_changer() {
 		button.set_clickable(true);
 		control_mode_menu.add_son(&button);
 	}
-	// TODO add proccess
 	// 300+
 }
 
@@ -295,9 +297,11 @@ void start_change_mode() {
 	button.set_normal_color(default_click_color);
 }
 
-void stop_change_mode() {
+void stop_change_mode(int x) {
 	control_mode_menu.set_visible(false);
 	control_compile.set_visible(true);
+	now_checker -> set_mode(x);
+	control_change_mode.set_text(modes_title[x]);
 }
 
 
@@ -428,7 +432,6 @@ int main() {
 	
 	{ // change_mode(215) -> control
 		control_change_mode.set_id(215);
-		control_change_mode.set_text("\n cmp  \n type \n");
 		control_change_mode.set_visible(true);
 		control_change_mode.set_clickable(true);
 		control_change_mode.set_position(10, 0);
@@ -536,6 +539,7 @@ int main() {
 			} else if (x.id == 214) {
 				bool ret = MessageBox(GetActiveWindow(), "Do you really want to DELETE all the tasks",
 					"Warning", MB_OKCANCEL|MB_ICONWARNING);
+				// TODO
 				if (ret == IDOK) now_checker -> del_files();
 				screen_element_controller.start();
 				update_siz();
@@ -545,8 +549,7 @@ int main() {
 			} else if (x.id == 215) {
 				start_change_mode();
 			} else if (x.id >= 300 && x.id <= 304) {
-				Button &button = modes[x.id - 300];
-				
+				stop_change_mode(x.id - 300);
 			} else {
 				show_control();
 				for (Checker* checker: checker_controller.checkers) if (checker -> get_id() == x.id) {
@@ -554,6 +557,7 @@ int main() {
 					break;
 				}
 				control_name.set_text(now_checker -> get_name());
+				control_change_mode.set_text(modes_title[now_checker -> get_mode()]);
 				update_vis();
 				update_siz();
 			}

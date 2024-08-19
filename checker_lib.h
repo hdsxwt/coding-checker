@@ -68,6 +68,7 @@ public:
 	void set_mode (short mode) {
 		if (mode < 0 || mode > 4) throw ("Not a Cheker mode.");
 		this -> mode = mode;
+		write();
 	}
 	void set_name (string name) { this -> name = name; }
 	int get_id        () { return id; }
@@ -181,7 +182,7 @@ public:
 		out << setw(4) << config << endl;
 		out.close();
 	}
-	bool start() { // siz, mode
+	bool start() { // read
 		if (!directory_exists(path)) {
 			if (!create_directory(path)) return false;
 		}

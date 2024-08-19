@@ -590,6 +590,8 @@ Call_back Fold_button::update(bool is_root, bool force) { // update ------------
 Call_back Del_button::update(bool is_root, bool force) { // update ------------------------------------------------------------------------------------------------
 	Call_back call_back = this -> Button::update(false, force);
 	if (!call_back.empty()) {
+		SetForegroundWindow(GetActiveWindow());
+		// TODO
 		int ret = MessageBox(GetActiveWindow(), "Do you really want to DELETE the tasks?", "Warning", MB_OKCANCEL|MB_ICONWARNING);
 		if (ret == IDOK) {
 			fa -> del();
@@ -676,6 +678,7 @@ void Screen_element_controller::stop() {
 
 
 void debug_output(string text) {
+	// TODO
 	MessageBox(NULL, text.data(), 0, 0);
 }
 
